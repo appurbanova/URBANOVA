@@ -9,6 +9,7 @@ import {
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import NotFound from '@/pages/not-found';
+import { Urbanova3D } from '@/components/Urbanova3D';
 
 const queryClient = new QueryClient();
 
@@ -364,7 +365,7 @@ function Terms() {
 }
 
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Demo} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route component={NotFound} /></Switch>;
 }
 
 function App() {
