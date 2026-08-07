@@ -3,8 +3,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   Activity, ArrowUpRight, Building2, Check, ChevronRight, CircleHelp,
-  Compass, Eye, Github, Layers3, LogOut, Menu, Network, Orbit, Radio, ShieldCheck, Terminal,
-  UserRound, WalletCards, X, Zap
+  Compass, Cookie, Eye, FileText, Github, Layers3, LockKeyhole, LogOut, Menu, Network, Orbit,
+  Radio, Scale, ShieldCheck, Terminal, UserRound, WalletCards, X, Zap
 } from 'lucide-react';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
@@ -89,7 +89,7 @@ function Footer() {
   return <footer className="border-t border-border/60 bg-[#0d1020]">
     <div className="mx-auto flex max-w-7xl flex-col gap-7 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
       <div><Logo /><p className="mt-4 max-w-xs font-mono text-[10px] leading-5 tracking-[.08em] text-muted-foreground">A living map for the work you put into the world.</p></div>
-      <div className="flex flex-wrap gap-x-6 gap-y-3 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link href="/cookies" data-testid="link-footer-cookies" className="hover:text-primary">Cookies</Link><Link href="/about" data-testid="link-footer-about" className="hover:text-primary">About</Link><a href="https://github.com/appurbanova/URBANOVA" target="_blank" rel="noreferrer" data-testid="link-footer-github" className="flex items-center gap-2 hover:text-primary">Source <Github size={13} /></a></div>
+      <div className="flex flex-wrap gap-x-6 gap-y-3 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link href="/legal" data-testid="link-footer-legal" className="hover:text-primary">Legal center</Link><Link href="/privacy" data-testid="link-footer-privacy" className="hover:text-primary">Privacy</Link><Link href="/terms" data-testid="link-footer-terms" className="hover:text-primary">Terms</Link><Link href="/cookies" data-testid="link-footer-cookies" className="hover:text-primary">Cookies</Link><Link href="/about" data-testid="link-footer-about" className="hover:text-primary">About</Link><a href="https://github.com/appurbanova/URBANOVA" target="_blank" rel="noreferrer" data-testid="link-footer-github" className="flex items-center gap-2 hover:text-primary">Source <Github size={13} /></a></div>
     </div>
   </footer>;
 }
@@ -123,6 +123,21 @@ const seoByPath: Record<string, { title: string; description: string; indexable:
   '/cookies': {
     title: 'URBANOVA Privacy and Local Storage Policy',
     description: 'Read how the URBANOVA frontend preview handles local sessions, demo preferences, analytics choices, and browser storage.',
+    indexable: true,
+  },
+  '/legal': {
+    title: 'Legal Center | URBANOVA',
+    description: 'Find URBANOVA privacy, terms, and cookie information in one clear legal center.',
+    indexable: true,
+  },
+  '/privacy': {
+    title: 'Privacy Policy | URBANOVA',
+    description: 'Read how URBANOVA handles information in the public preview and future product surfaces.',
+    indexable: true,
+  },
+  '/terms': {
+    title: 'Terms of Use | URBANOVA',
+    description: 'Read the terms for using the URBANOVA public preview and its connected public sources.',
     indexable: true,
   },
   '/login': {
@@ -331,8 +346,25 @@ function Cookies() {
 
 function PolicyRow({ title, text }: { title: string; text: string }) { return <div className="grid gap-4 border-t border-border pt-5 sm:grid-cols-[180px_1fr]"><h2 className="font-display text-lg font-semibold">{title}</h2><p className="text-sm leading-7 text-muted-foreground">{text}</p></div>; }
 
+function LegalCenter() {
+  const documents = [
+    { href: '/privacy', label: 'Privacy policy', eyebrow: 'How information is handled', text: 'A plain-language view of what the preview stores, what it reads from public sources, and what stays in your browser.', icon: <LockKeyhole size={18} /> },
+    { href: '/terms', label: 'Terms of use', eyebrow: 'The agreement for using URBANOVA', text: 'The boundaries for using the preview, connecting public profiles, and participating in the city as it grows.', icon: <Scale size={18} /> },
+    { href: '/cookies', label: 'Cookies & local storage', eyebrow: 'Your browser footprint', text: 'Control optional analytics preferences and clear local preview data from this browser at any time.', icon: <Cookie size={18} /> },
+  ];
+  return <div className="noise"><SiteHeader /><main className="mx-auto max-w-7xl px-5 py-14 sm:px-8 md:py-24"><div className="max-w-3xl"><SectionLabel>Legal center / 2026</SectionLabel><h1 className="font-display text-5xl font-bold leading-[.9] tracking-[-.06em] sm:text-7xl">Clear ground for a <span className="text-primary">living city.</span></h1><p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground">The short version: URBANOVA is a public preview built to make public work easier to read. These documents explain the small amount of information the preview uses and the rules that keep the map useful.</p></div><div className="mt-14 grid gap-4 md:grid-cols-3">{documents.map((document) => <Link key={document.href} href={document.href} data-testid={`link-legal-${document.href.slice(1)}`} className="group flex min-h-[250px] flex-col border border-border bg-card/60 p-5 transition-colors hover:border-primary/70"><div className="grid size-10 place-items-center border border-primary/50 bg-primary/10 text-primary transition-transform group-hover:rotate-6">{document.icon}</div><div className="mt-10 font-mono text-[9px] uppercase tracking-[.16em] text-secondary">{document.eyebrow}</div><h2 className="mt-2 font-display text-2xl font-semibold">{document.label}</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">{document.text}</p><span className="mt-auto pt-6 font-mono text-[10px] uppercase tracking-[.14em] text-primary">Read document <ArrowUpRight size={13} className="ml-1 inline" /></span></Link>)}</div><div className="mt-12 grid gap-5 border border-primary/40 bg-primary/5 p-5 sm:p-7 md:grid-cols-[.7fr_1.3fr] md:items-center"><div className="flex items-center gap-3"><FileText size={20} className="text-primary" /><h2 className="font-display text-2xl font-semibold">A preview, honestly labeled.</h2></div><p className="text-sm leading-7 text-muted-foreground">This version of URBANOVA stores demo sessions and preferences locally in your browser. If a production version introduces accounts, integrations, or analytics, these documents will be updated before those features go live.</p></div><p className="mt-7 font-mono text-[10px] uppercase tracking-[.14em] text-muted-foreground">Last reviewed · August 2026</p></main><Footer /></div>;
+}
+
+function Privacy() {
+  return <div className="noise"><SiteHeader /><main className="mx-auto max-w-4xl px-5 py-14 sm:px-8 md:py-24"><SectionLabel>Legal center / Privacy</SectionLabel><h1 className="font-display text-5xl font-bold leading-[.9] tracking-[-.06em] sm:text-7xl">Your map should not <span className="text-primary">map you.</span></h1><p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground">This policy describes the current URBANOVA public preview. It is intentionally scoped to what exists today, rather than promising features that are not live.</p><section className="mt-14 space-y-7"><PolicyRow title="What you enter" text="An email address used to enter the preview, plus the name derived from it, is stored in this browser so the local command center can recognize you. Wallet addresses are stored locally when you choose a wallet connection." /><PolicyRow title="Public GitHub data" text="The demo can read a public GitHub profile when you request it. It uses the public profile response to shape the visual preview and does not ask for a GitHub password or private repository access." /><PolicyRow title="Where it goes" text="In this preview, session, city preferences, and analytics preference remain in local browser storage. They are not sent to a URBANOVA backend. Public GitHub requests go directly to GitHub from your browser." /><PolicyRow title="Your choices" text="You can clear local demo data from the Cookies page or remove this site's stored data through your browser settings. Optional analytics is off when you choose it and is not sent by this preview." /><PolicyRow title="Future changes" text="If URBANOVA adds accounts, connected services, or analytics, this policy will be updated before those changes are used. The Legal Center will always link to the current version." /></section><div className="mt-10 flex flex-wrap gap-3"><Link href="/cookies" data-testid="link-privacy-cookies" className="flex items-center gap-2 bg-primary px-4 py-3 font-mono text-[10px] uppercase tracking-[.14em] text-primary-foreground">Manage local data <ArrowUpRight size={14} /></Link><Link href="/legal" data-testid="link-privacy-legal" className="flex items-center gap-2 border border-border px-4 py-3 font-mono text-[10px] uppercase tracking-[.14em] text-muted-foreground hover:border-primary hover:text-primary">Back to Legal Center</Link></div></main><Footer /></div>;
+}
+
+function Terms() {
+  return <div className="noise"><SiteHeader /><main className="mx-auto max-w-4xl px-5 py-14 sm:px-8 md:py-24"><SectionLabel>Legal center / Terms</SectionLabel><h1 className="font-display text-5xl font-bold leading-[.9] tracking-[-.06em] sm:text-7xl">Keep the city <span className="text-primary">constructive.</span></h1><p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground">By using the current URBANOVA public preview, you agree to use it respectfully and understand that it is an experimental product surface.</p><section className="mt-14 space-y-7"><PolicyRow title="Use the preview responsibly" text="Do not use URBANOVA to abuse, harass, impersonate, scrape at unreasonable volume, or interfere with the service or other people's access to it." /><PolicyRow title="Public sources stay public" text="When you load a public GitHub profile, you confirm that you have the right to request and display that public information. URBANOVA does not grant access to private repositories or accounts." /><PolicyRow title="Experimental service" text="The preview is provided as-is while the product is being developed. Data, features, availability, and visual interpretations may change as the city learns." /><PolicyRow title="Your content and choices" text="You keep ownership of work you connect or reference. You are responsible for the information you choose to enter and for reviewing the public visibility of anything you connect." /><PolicyRow title="Questions and updates" text="If a production service introduces new obligations, the Terms will be revised and linked from the Legal Center before the new experience is used." /></section><div className="mt-10 flex flex-wrap gap-3"><Link href="/legal" data-testid="link-terms-legal" className="flex items-center gap-2 border border-border px-4 py-3 font-mono text-[10px] uppercase tracking-[.14em] text-muted-foreground hover:border-primary hover:text-primary">Back to Legal Center</Link><Link href="/privacy" data-testid="link-terms-privacy" className="flex items-center gap-2 border border-border px-4 py-3 font-mono text-[10px] uppercase tracking-[.14em] text-muted-foreground hover:border-primary hover:text-primary">Read Privacy <ArrowUpRight size={14} /></Link></div></main><Footer /></div>;
+}
+
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Demo} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Demo} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route component={NotFound} /></Switch>;
 }
 
 function App() {
