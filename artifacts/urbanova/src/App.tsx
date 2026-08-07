@@ -94,6 +94,87 @@ function Footer() {
   </footer>;
 }
 
+const seoByPath: Record<string, { title: string; description: string; indexable: boolean }> = {
+  '/': {
+    title: 'URBANOVA | A Living Digital City for Builders',
+    description: 'URBANOVA turns public work into a living digital city where builders can explore projects, signals, communities, and ideas.',
+    indexable: true,
+  },
+  '/demo': {
+    title: 'Interactive Digital City Demo | URBANOVA',
+    description: 'Explore a living URBANOVA city demo and see how public projects, conversations, and community signals become visible as districts.',
+    indexable: true,
+  },
+  '/about': {
+    title: 'About URBANOVA | A Living Digital City for Builders',
+    description: 'Learn how URBANOVA gives public work a place to live by turning builder activity, ideas, and communities into an explorable digital city.',
+    indexable: true,
+  },
+  '/how-to': {
+    title: 'How URBANOVA Works | Read Your Public Work as a City',
+    description: 'See how URBANOVA connects public work, releases, writing, and conversations into a clear, explorable map for builders.',
+    indexable: true,
+  },
+  '/roadmap': {
+    title: 'URBANOVA Roadmap | Building the Digital City',
+    description: 'Follow the URBANOVA roadmap as the living digital city grows from a thoughtful public-work map into a richer builder environment.',
+    indexable: true,
+  },
+  '/cookies': {
+    title: 'URBANOVA Privacy and Local Storage Policy',
+    description: 'Read how the URBANOVA frontend preview handles local sessions, demo preferences, analytics choices, and browser storage.',
+    indexable: true,
+  },
+  '/login': {
+    title: 'Enter URBANOVA | Your Private Command Center',
+    description: 'Enter the URBANOVA preview to tune your living city, explore districts, and read the health of your public work.',
+    indexable: false,
+  },
+  '/dashboard': {
+    title: 'URBANOVA Command Center | Your Living City',
+    description: 'View your URBANOVA city health, active districts, public connections, and latest signals in one private command center.',
+    indexable: false,
+  },
+};
+
+function Seo() {
+  const [location] = useLocation();
+  useEffect(() => {
+    const path = location.split('?')[0].replace(/\/$/, '') || '/';
+    const metadata = seoByPath[path] ?? {
+      title: 'Page Not Found | URBANOVA',
+      description: 'The URBANOVA page you requested could not be found.',
+      indexable: false,
+    };
+    const canonicalUrl = `https://urbanova.app${path === '/' ? '/' : path}`;
+    const setMeta = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
+      let element = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute(attribute, key);
+        document.head.appendChild(element);
+      }
+      element.content = content;
+    };
+    document.title = metadata.title;
+    setMeta('meta[name="description"]', 'name', 'description', metadata.description);
+    setMeta('meta[name="robots"]', 'name', 'robots', metadata.indexable ? 'index, follow' : 'noindex, nofollow');
+    setMeta('meta[property="og:title"]', 'property', 'og:title', metadata.title);
+    setMeta('meta[property="og:description"]', 'property', 'og:description', metadata.description);
+    setMeta('meta[property="og:url"]', 'property', 'og:url', canonicalUrl);
+    setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', metadata.title);
+    setMeta('meta[name="twitter:description"]', 'name', 'twitter:description', metadata.description);
+    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = canonicalUrl;
+  }, [location]);
+  return null;
+}
+
 function CityMap({ active = [], onSelect, compact = false }: { active?: DistrictKey[]; onSelect?: (key: DistrictKey) => void; compact?: boolean }) {
   const districts: { key: DistrictKey; points: string }[] = [
     { key: 'signal', points: '95,40 190,28 240,82 207,152 116,140 75,93' },
@@ -255,7 +336,7 @@ function Router() {
 }
 
 function App() {
-  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
+  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Seo /><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
 }
 
 export default App;

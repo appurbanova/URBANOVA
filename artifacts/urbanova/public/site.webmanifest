@@ -1,0 +1,21 @@
+{
+  "name": "URBANOVA",
+  "short_name": "URBANOVA",
+  "description": "A living digital city for builders and their public work.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1020",
+  "theme_color": "#0d1020",
+  "icons": [
+    {
+      "src": "/android-chrome-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
