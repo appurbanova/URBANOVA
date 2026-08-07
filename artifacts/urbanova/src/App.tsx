@@ -9,6 +9,7 @@ import {
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import NotFound from '@/pages/not-found';
+import { Urbanova3D } from '@/components/Urbanova3D';
 
 const queryClient = new QueryClient();
 
@@ -251,7 +252,7 @@ function Cookies() {
 function PolicyRow({ title, text }: { title: string; text: string }) { return <div className="grid gap-4 border-t border-border pt-5 sm:grid-cols-[180px_1fr]"><h2 className="font-display text-lg font-semibold">{title}</h2><p className="text-sm leading-7 text-muted-foreground">{text}</p></div>; }
 
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Demo} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route component={NotFound} /></Switch>;
 }
 
 function App() {
