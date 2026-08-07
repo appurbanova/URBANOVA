@@ -1,0 +1,1 @@
+- [Urbanova legal preview](urbanova-legal-preview.md) — Legal content currently describes the browser-only public preview, not a production account system.
