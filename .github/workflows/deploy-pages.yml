@@ -43,8 +43,12 @@ jobs:
           NODE_ENV: production
         run: pnpm --filter @workspace/urbanova run build
 
-      - name: Prepare SPA fallback
+      - name: Prepare SPA routes and fallback
         run: |
+          for route in demo about how-to roadmap legal privacy terms cookies login dashboard; do
+            mkdir -p "artifacts/urbanova/dist/public/$route"
+            cp artifacts/urbanova/dist/public/index.html "artifacts/urbanova/dist/public/$route/index.html"
+          done
           cp artifacts/urbanova/dist/public/index.html artifacts/urbanova/dist/public/404.html
           touch artifacts/urbanova/dist/public/.nojekyll
 

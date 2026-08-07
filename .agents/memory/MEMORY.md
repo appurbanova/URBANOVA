@@ -1,1 +1,1 @@
-- [Urbanova legal preview](urbanova-legal-preview.md) — Legal content currently describes the browser-only public preview, not a production account system.
+- [GitHub push authorization](github-push-authorization.md) — Push ke GitHub memerlukan kredensial source-control GitHub Replit, bukan hanya remote origin.
