@@ -1,23 +1,26 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
   ArrowUpRight,
   Building2,
   ChevronDown,
   Compass,
-  Eye,
   Layers3,
   MapPin,
   Menu,
   Minus,
   Plus,
   Radio,
-  Scan,
+  RotateCcw,
   Sparkles,
   TrainFront,
   Trees,
   Waves,
   X,
 } from "lucide-react";
+
+type Layer = "district" | "mobility" | "green";
 
 type District = {
   name: string;
@@ -37,7 +40,8 @@ const districts: District[] = [
     color: "#c8e98b",
     accent: "#536d2e",
     stat: "82% shade cover",
-    detail: "A terraced neighborhood where every address opens to a shared garden, with evening markets woven into the pedestrian level.",
+    detail:
+      "A terraced neighborhood where every address opens to a shared garden, with evening markets woven into the pedestrian level.",
   },
   {
     name: "Tideworks",
@@ -46,7 +50,8 @@ const districts: District[] = [
     color: "#9bdbd5",
     accent: "#216c6e",
     stat: "06 min to water",
-    detail: "The district's working edge: tidal gardens, a public bathhouse, and small-scale fabrication in the old dock sheds.",
+    detail:
+      "The district's working edge: tidal gardens, a public bathhouse, and small-scale fabrication in the old dock sheds.",
   },
   {
     name: "Foundry Row",
@@ -55,95 +60,294 @@ const districts: District[] = [
     color: "#f2be73",
     accent: "#92552b",
     stat: "24/7 active",
-    detail: "A low-rise band of studios, food halls and night schools that keeps the original industrial grain alive.",
+    detail:
+      "A low-rise band of studios, food halls and night schools that keeps the original industrial grain alive.",
   },
 ];
 
 const buildings = [
-  { x: 9, y: 28, w: 49, h: 145, d: 46, tone: "#d7c8aa", name: "Morrow House" },
-  { x: 21, y: 22, w: 38, h: 193, d: 42, tone: "#789196", name: "Lumen Tower" },
-  { x: 32, y: 34, w: 54, h: 112, d: 53, tone: "#bf8258", name: "Foundry Hall" },
-  { x: 47, y: 14, w: 46, h: 246, d: 50, tone: "#a9c7bd", name: "Canopy Exchange" },
-  { x: 59, y: 28, w: 42, h: 153, d: 45, tone: "#d9ad69", name: "Arcade 06" },
-  { x: 70, y: 40, w: 55, h: 105, d: 52, tone: "#91a98d", name: "Juniper Court" },
-  { x: 83, y: 22, w: 39, h: 183, d: 40, tone: "#b4d7d5", name: "Tide House" },
-];
+  { x: -7.2, z: -1.2, w: 2.3, d: 2.2, h: 4.1, tone: "#d7c8aa", name: "Morrow House", district: "FR-07" },
+  { x: -4.8, z: -2.8, w: 1.9, d: 1.8, h: 5.6, tone: "#789196", name: "Lumen Tower", district: "TW-02" },
+  { x: -2.2, z: 1.3, w: 2.6, d: 2.3, h: 3.1, tone: "#bf8258", name: "Foundry Hall", district: "FR-07" },
+  { x: 0.5, z: -1.6, w: 2.25, d: 2.5, h: 6.9, tone: "#a9c7bd", name: "Canopy Exchange", district: "CN-04" },
+  { x: 3.4, z: 0.2, w: 2.1, d: 2.3, h: 4.4, tone: "#d9ad69", name: "Arcade 06", district: "CN-04" },
+  { x: 5.9, z: -2.4, w: 2.8, d: 2.2, h: 2.9, tone: "#91a98d", name: "Juniper Court", district: "CN-04" },
+  { x: 7.5, z: 1.8, w: 2.1, d: 2.4, h: 5.2, tone: "#b4d7d5", name: "Tide House", district: "TW-02" },
+] as const;
 
-function Building({
-  building,
-  index,
-  selected,
-}: {
-  building: (typeof buildings)[number];
-  index: number;
-  selected: boolean;
-}) {
-  const windows = Array.from({ length: 15 }, (_, i) => i);
-  return (
-    <button
-      type="button"
-      aria-label={`Select ${building.name}`}
-      className="absolute bottom-[19%] transition-transform duration-500 hover:-translate-y-2 focus:outline-none"
-      style={{
-        left: `${building.x}%`,
-        width: `${building.w}px`,
-        height: `${building.h}px`,
-        zIndex: index + 5,
-        transform: selected ? "translateY(-13px) scale(1.04)" : undefined,
-        transformStyle: "preserve-3d",
-      }}
-    >
-      <span
-        className="absolute inset-0 overflow-hidden rounded-[2px] border border-white/30 shadow-[12px_18px_20px_rgba(40,50,42,.22)]"
-        style={{
-          background: `linear-gradient(90deg, ${building.tone} 0%, ${building.tone} 78%, #52665f 78%, #465852 100%)`,
-          clipPath: "polygon(0 3%, 78% 0, 100% 7%, 100% 100%, 0 100%)",
-        }}
-      >
-        <span className="absolute inset-0 grid grid-cols-3 gap-1.5 p-2 opacity-60">
-          {windows.map((window) => (
-            <span
-              key={window}
-              className="rounded-[1px] bg-[#f7edbf]"
-              style={{ opacity: window % 4 === 0 ? 0.34 : 0.72 }}
-            />
-          ))}
-        </span>
-        <span className="absolute bottom-0 left-0 right-0 h-5 bg-[#3d554c]/50" />
-      </span>
-      <span
-        className="absolute left-full top-[7%] h-[93%] w-[18px] origin-left skew-y-[-28deg] rounded-r-sm"
-        style={{ background: "linear-gradient(90deg,#52665f,#33483f)" }}
-      />
-      {selected && (
-        <span className="absolute -inset-2 rounded-sm border border-[#d6f28d] shadow-[0_0_0_3px_rgba(214,242,141,.16)]" />
-      )}
-    </button>
+type BuildingMesh = THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial> & {
+  userData: { buildingName: string; district: string; baseY: number };
+};
+
+function createRoad(scene: THREE.Scene, x: number, z: number, width: number, depth: number, rotation = 0) {
+  const road = new THREE.Mesh(
+    new THREE.BoxGeometry(width, 0.08, depth),
+    new THREE.MeshStandardMaterial({ color: "#d9c997", roughness: 0.95 }),
   );
+  road.position.set(x, 0.08, z);
+  road.rotation.y = rotation;
+  scene.add(road);
+}
+
+function createTree(group: THREE.Group, x: number, z: number, scale = 1) {
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.08 * scale, 0.11 * scale, 0.55 * scale, 8),
+    new THREE.MeshStandardMaterial({ color: "#6e563c", roughness: 1 }),
+  );
+  trunk.position.set(x, 0.35 * scale, z);
+  const crown = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.46 * scale, 1),
+    new THREE.MeshStandardMaterial({ color: "#78965f", roughness: 0.9 }),
+  );
+  crown.position.set(x, 0.9 * scale, z);
+  group.add(trunk, crown);
 }
 
 export function Urbanova3D() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
+  const buildingMeshesRef = useRef<BuildingMesh[]>([]);
+  const layerGroupsRef = useRef<Record<Layer, THREE.Group> | null>(null);
   const [selectedCode, setSelectedCode] = useState("CN-04");
-  const [activeLayer, setActiveLayer] = useState<"district" | "mobility" | "green">("district");
+  const [activeLayer, setActiveLayer] = useState<Layer>("district");
   const [focusMode, setFocusMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const [webglReady, setWebglReady] = useState(true);
   const selectedDistrict = useMemo(
     () => districts.find((district) => district.code === selectedCode) ?? districts[0],
     [selectedCode],
   );
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const host = canvas?.parentElement;
+    if (!canvas || !host) return;
+
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+    } catch {
+      setWebglReady(false);
+      return;
+    }
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#b6c7b6");
+    scene.fog = new THREE.Fog("#b6c7b6", 18, 34);
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(13, 13, 16);
+    cameraRef.current = camera;
+    sceneRef.current = scene;
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.target.set(0, 1.2, 0);
+    controls.minDistance = 7;
+    controls.maxDistance = 28;
+    controls.maxPolarAngle = Math.PI / 2.05;
+    controlsRef.current = controls;
+
+    scene.add(new THREE.HemisphereLight("#fff6d8", "#547468", 2.6));
+    const sun = new THREE.DirectionalLight("#fff0c7", 3.8);
+    sun.position.set(-8, 17, 9);
+    sun.castShadow = true;
+    scene.add(sun);
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 25),
+      new THREE.MeshStandardMaterial({ color: "#9eb39e", roughness: 1, metalness: 0 }),
+    );
+    ground.rotation.x = -Math.PI / 2;
+    scene.add(ground);
+
+    const grid = new THREE.GridHelper(28, 28, "#68836f", "#8fa795");
+    grid.position.y = 0.04;
+    (grid.material as THREE.Material).opacity = 0.42;
+    (grid.material as THREE.Material).transparent = true;
+    scene.add(grid);
+
+    createRoad(scene, 0, -0.6, 25, 0.72, -0.08);
+    createRoad(scene, -1.2, 1.9, 0.65, 19, 0.17);
+    createRoad(scene, 5.4, -0.4, 0.55, 18, -0.23);
+
+    const water = new THREE.Mesh(
+      new THREE.PlaneGeometry(8, 25),
+      new THREE.MeshStandardMaterial({ color: "#75aaa7", transparent: true, opacity: 0.82, roughness: 0.35 }),
+    );
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(-11.2, 0.06, 0);
+    scene.add(water);
+
+    const buildingsGroup = new THREE.Group();
+    const buildingMeshes: BuildingMesh[] = [];
+    buildings.forEach((building) => {
+      const material = new THREE.MeshStandardMaterial({
+        color: building.tone,
+        roughness: 0.75,
+        metalness: 0.05,
+        emissive: "#000000",
+      });
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(building.w, building.h, building.d), material) as BuildingMesh;
+      mesh.position.set(building.x, building.h / 2, building.z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.userData = { buildingName: building.name, district: building.district, baseY: building.h / 2 };
+      buildingMeshes.push(mesh);
+      buildingsGroup.add(mesh);
+
+      const roof = new THREE.Mesh(
+        new THREE.BoxGeometry(building.w * 0.84, 0.08, building.d * 0.84),
+        new THREE.MeshStandardMaterial({ color: "#445b4d", roughness: 0.9 }),
+      );
+      roof.position.set(building.x, building.h + 0.06, building.z);
+      buildingsGroup.add(roof);
+    });
+    scene.add(buildingsGroup);
+    buildingMeshesRef.current = buildingMeshes;
+
+    const mobilityGroup = new THREE.Group();
+    const route = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-9, 0.13, 3.4),
+        new THREE.Vector3(-4, 0.13, 2.6),
+        new THREE.Vector3(0, 0.13, 1.5),
+        new THREE.Vector3(4.2, 0.13, 0.5),
+        new THREE.Vector3(9.5, 0.13, -1.5),
+      ]),
+      new THREE.LineDashedMaterial({ color: "#f3e5ae", dashSize: 0.42, gapSize: 0.26, linewidth: 2 }),
+    );
+    route.computeLineDistances();
+    mobilityGroup.add(route);
+    [-6.2, -1.1, 4.8].forEach((x) => {
+      const station = new THREE.Mesh(
+        new THREE.TorusGeometry(0.25, 0.045, 8, 20),
+        new THREE.MeshBasicMaterial({ color: "#eff0be" }),
+      );
+      station.rotation.x = Math.PI / 2;
+      station.position.set(x, 0.18, 1.9 - (x + 1.2) * 0.17);
+      mobilityGroup.add(station);
+    });
+    scene.add(mobilityGroup);
+
+    const greenGroup = new THREE.Group();
+    [
+      [-7.8, 3.1, 1.1],
+      [-6.5, 3.5, 0.8],
+      [-3.2, -4.1, 0.9],
+      [1.9, -3.1, 1.2],
+      [4.8, 3.2, 0.85],
+      [7.9, 3.5, 1.1],
+      [8.8, -3.3, 0.8],
+    ].forEach(([x, z, scale]) => createTree(greenGroup, x, z, scale));
+    scene.add(greenGroup);
+    layerGroupsRef.current = { district: buildingsGroup, mobility: mobilityGroup, green: greenGroup };
+
+    const resize = () => {
+      const width = host.clientWidth;
+      const height = host.clientHeight;
+      if (!width || !height) return;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    };
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(host);
+    resize();
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let downX = 0;
+    let downY = 0;
+    const onPointerDown = (event: PointerEvent) => {
+      downX = event.clientX;
+      downY = event.clientY;
+    };
+    const onPointerUp = (event: PointerEvent) => {
+      if (Math.hypot(event.clientX - downX, event.clientY - downY) > 6) return;
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObjects(buildingMeshesRef.current, false)[0]?.object as BuildingMesh | undefined;
+      if (hit) setSelectedCode(hit.userData.district);
+    };
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointerup", onPointerUp);
+
+    let frame = 0;
+    const animate = () => {
+      frame = requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      controls.dispose();
+      renderer.dispose();
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry.dispose();
+          const material = object.material;
+          if (Array.isArray(material)) material.forEach((item) => item.dispose());
+          else material.dispose();
+        }
+      });
+      buildingMeshesRef.current = [];
+    };
+  }, []);
+
+  useEffect(() => {
+    buildingMeshesRef.current.forEach((mesh) => {
+      const selected = mesh.userData.district === selectedCode;
+      mesh.material.emissive.set(selected ? "#d6f28d" : "#000000");
+      mesh.material.emissiveIntensity = selected ? 0.42 : 0;
+      mesh.position.y = mesh.userData.baseY + (selected ? 0.18 : 0);
+    });
+    const groups = layerGroupsRef.current;
+    if (groups) {
+      groups.mobility.visible = activeLayer === "mobility";
+      groups.green.visible = activeLayer === "green";
+      groups.district.visible = true;
+    }
+    const controls = controlsRef.current;
+    if (controls && focusMode) {
+      const targetBuilding = buildings.find((building) => building.district === selectedCode);
+      if (targetBuilding) {
+        controls.target.lerp(new THREE.Vector3(targetBuilding.x, 1.5, targetBuilding.z), 0.18);
+      }
+    }
+  }, [activeLayer, focusMode, selectedCode]);
+
+  const zoom = (factor: number) => {
+    const controls = controlsRef.current;
+    const camera = cameraRef.current;
+    if (!controls || !camera) return;
+    const offset = camera.position.clone().sub(controls.target).multiplyScalar(factor);
+    const distance = offset.length();
+    if (distance > 7 && distance < 28) camera.position.copy(controls.target.clone().add(offset));
+    controls.update();
+  };
+
+  const resetView = () => {
+    const controls = controlsRef.current;
+    const camera = cameraRef.current;
+    if (!controls || !camera) return;
+    camera.position.set(13, 13, 16);
+    controls.target.set(0, 1.2, 0);
+    controls.update();
+  };
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#dfe4d7] text-[#26382f] selection:bg-[#d6f28d] selection:text-[#22352c]">
-      <style>{`
-        @keyframes urbanova-float { 0%,100% { transform: translateY(0px) rotateX(58deg) rotateZ(-19deg); } 50% { transform: translateY(-8px) rotateX(58deg) rotateZ(-19deg); } }
-        @keyframes urbanova-pulse { 0%,100% { opacity: .32; transform: scale(.95); } 50% { opacity: .85; transform: scale(1.04); } }
-        @keyframes urbanova-scan { from { transform: translateX(-110%); } to { transform: translateX(430%); } }
-        .urbanova-grid { background-image: linear-gradient(rgba(61,91,74,.16) 1px, transparent 1px), linear-gradient(90deg, rgba(61,91,74,.16) 1px, transparent 1px); background-size: 34px 34px; }
-        .urbanova-noise { position: relative; }
-        .urbanova-noise:after { content:""; pointer-events:none; position:absolute; inset:0; opacity:.06; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
-      `}</style>
-
       <header className="relative z-30 flex items-center justify-between border-b border-[#536b5c]/20 bg-[#e6eadf]/80 px-5 py-4 backdrop-blur-md md:px-9">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#273d32] text-[#d6f28d]">
@@ -180,7 +384,7 @@ export function Urbanova3D() {
               A city that <em className="font-['DM_Serif_Display'] not-italic text-[#557d50]">listens.</em>
             </h1>
             <p className="mt-7 max-w-[315px] text-[15px] leading-7 text-[#607469]">
-              Navigate Urbanova, a living prototype for the next generous city. Move through neighborhoods shaped by people, climate, and time.
+              Navigate Urbanova, a living prototype for the next generous city. Orbit through neighborhoods shaped by people, climate, and time.
             </p>
           </div>
           <div className="mt-8 border-t border-[#536b5c]/20 pt-5">
@@ -200,33 +404,21 @@ export function Urbanova3D() {
           </div>
         </aside>
 
-        <div className={`urbanova-noise relative min-h-[520px] overflow-hidden rounded-[28px] border border-[#536b5c]/25 bg-[#b9c8b5] shadow-[0_25px_70px_rgba(60,82,65,.18)] transition-all duration-700 md:min-h-[660px] ${focusMode ? "lg:scale-[1.02]" : ""}`}>
+        <div className={`relative min-h-[520px] overflow-hidden rounded-[28px] border border-[#536b5c]/25 bg-[#b9c8b5] shadow-[0_25px_70px_rgba(60,82,65,.18)] transition-all duration-700 md:min-h-[660px] ${focusMode ? "lg:scale-[1.02]" : ""}`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,#f4e9c2_0%,#c8d8c2_37%,#92ad9c_100%)]" />
-          <div className="absolute left-[8%] top-[8%] font-mono text-[9px] uppercase tracking-[.17em] text-[#637a69]">Urbanova / model 04.24</div>
-          <div className="absolute right-5 top-5 z-20 flex items-center gap-2 rounded-full border border-[#536b5c]/25 bg-[#eef1e4]/70 px-3 py-2 backdrop-blur-md">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#82a753]" /><span className="font-mono text-[9px] uppercase tracking-[.14em] text-[#53695c]">Simulation live</span>
+          <canvas ref={canvasRef} className="absolute inset-0 size-full cursor-grab active:cursor-grabbing" aria-label="Interactive 3D city model" />
+          <div className="pointer-events-none absolute left-[8%] top-[8%] z-10 font-mono text-[9px] uppercase tracking-[.17em] text-[#637a69]">Urbanova / model 04.24</div>
+          <div className="pointer-events-none absolute right-5 top-5 z-20 flex items-center gap-2 rounded-full border border-[#536b5c]/25 bg-[#eef1e4]/70 px-3 py-2 backdrop-blur-md">
+            <span className={`h-1.5 w-1.5 rounded-full ${webglReady ? "animate-pulse bg-[#82a753]" : "bg-[#b86c55]"}`} />
+            <span className="font-mono text-[9px] uppercase tracking-[.14em] text-[#53695c]">{webglReady ? "Simulation live" : "WebGL unavailable"}</span>
           </div>
-          <div className="absolute inset-x-0 top-[15%] h-20 bg-[#f1d79f]/30 blur-2xl" />
-          <div className="absolute inset-x-[-10%] bottom-[8%] top-[32%]" style={{ perspective: "900px" }}>
-            <div className="urbanova-grid absolute inset-[-22%] rounded-[40%] border border-[#66816d]/30 bg-[#9db49c]/65" style={{ transform: "rotateX(60deg) rotateZ(-19deg) scale(1.4)", transformOrigin: "center center", boxShadow: "0 -15px 45px rgba(60,89,68,.15) inset" }} />
-            <div className="absolute inset-0" style={{ transform: `scale(${zoom})`, transformOrigin: "50% 65%", transition: "transform .5s ease" }}>
-              {buildings.map((building, index) => (
-                <Building key={building.name} building={building} index={index} selected={building.name === (selectedCode === "CN-04" ? "Canopy Exchange" : selectedCode === "TW-02" ? "Tide House" : "Foundry Hall")} />
-              ))}
-              <div className="absolute bottom-[17%] left-[13%] h-10 w-[70%] skew-x-[-27deg] border-y-2 border-[#e5d49d]/80 bg-[#e8cf91]/35" />
-              <div className="absolute bottom-[22%] left-[26%] h-2 w-[57%] skew-x-[-27deg] bg-[#f4e8b9]/90 shadow-[0_0_14px_rgba(244,232,185,.7)]" />
-              <div className="absolute bottom-[12%] left-[26%] flex gap-12 text-[#f6efcb] opacity-75"><TrainFront size={24} /><span className="font-mono text-[9px] tracking-[.16em]">LINE 02</span></div>
-              <div className="absolute bottom-[30%] left-[18%] h-5 w-5 rounded-full border-2 border-[#e4f1b5]/80" style={{ animation: "urbanova-pulse 2.6s infinite" }} />
-              <div className="absolute bottom-[26%] left-[74%] h-5 w-5 rounded-full border-2 border-[#e4f1b5]/80" style={{ animation: "urbanova-pulse 2.6s 1s infinite" }} />
-            </div>
-          </div>
+          {!webglReady && <div className="absolute inset-0 z-10 grid place-items-center bg-[#dfe4d7]/80 p-8 text-center"><div><p className="font-['Space_Grotesk'] text-xl font-medium text-[#294034]">This city needs a WebGL-capable browser.</p><p className="mt-2 max-w-sm text-sm text-[#607469]">Try the latest Chrome, Safari, or Firefox to explore the model.</p></div></div>}
           <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2">
-            <button type="button" onClick={() => setZoom(Math.min(1.16, zoom + .08))} className="rounded-lg border border-[#536b5c]/25 bg-[#eef1e4]/75 p-2.5 backdrop-blur-md hover:bg-[#f4f5ed]" aria-label="Zoom in"><Plus size={15} /></button>
-            <button type="button" onClick={() => setZoom(Math.max(.9, zoom - .08))} className="rounded-lg border border-[#536b5c]/25 bg-[#eef1e4]/75 p-2.5 backdrop-blur-md hover:bg-[#f4f5ed]" aria-label="Zoom out"><Minus size={15} /></button>
-            <button type="button" onClick={() => setZoom(1)} className="rounded-lg border border-[#536b5c]/25 bg-[#eef1e4]/75 p-2.5 backdrop-blur-md hover:bg-[#f4f5ed]" aria-label="Reset view"><Scan size={15} /></button>
+            <button type="button" onClick={() => zoom(0.82)} className="rounded-lg border border-[#536b5c]/25 bg-[#eef1e4]/75 p-2.5 backdrop-blur-md hover:bg-[#f4f5ed]" aria-label="Zoom in"><Plus size={15} /></button>
+            <button type="button" onClick={() => zoom(1.18)} className="rounded-lg border border-[#536b5c]/25 bg-[#eef1e4]/75 p-2.5 backdrop-blur-md hover:bg-[#f4f5ed]" aria-label="Zoom out"><Minus size={15} /></button>
+            <button type="button" onClick={resetView} className="rounded-lg border border-[#536b5c]/25 bg-[#eef1e4]/75 p-2.5 backdrop-blur-md hover:bg-[#f4f5ed]" aria-label="Reset view"><RotateCcw size={15} /></button>
           </div>
-          <div className="absolute bottom-5 right-5 z-20 hidden items-center gap-2 rounded-lg border border-[#536b5c]/25 bg-[#eef1e4]/75 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#62786a] backdrop-blur-md sm:flex"><MapPin size={13} /> Tap a building to inspect</div>
-          <div className="absolute left-1/2 top-0 h-full w-1/5 -translate-x-1/2 skew-x-[-15deg] bg-[#f5edc5]/15 blur-2xl" style={{ animation: "urbanova-scan 7s ease-in-out infinite" }} />
+          <div className="absolute bottom-5 right-5 z-20 hidden items-center gap-2 rounded-lg border border-[#536b5c]/25 bg-[#eef1e4]/75 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#62786a] backdrop-blur-md sm:flex"><MapPin size={13} /> Drag to orbit · tap a building</div>
         </div>
       </section>
 
