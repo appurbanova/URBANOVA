@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --font-sans: var(--app-font-sans);
+  --font-mono: var(--app-font-mono);
+  --radius-lg: var(--radius);
+}
+
+:root {
+  --background: 228 28% 9%;
+  --foreground: 42 42% 94%;
+  --border: 225 19% 21%;
+  --input: 225 19% 24%;
+  --ring: 39 93% 61%;
+  --card: 228 25% 12%;
+  --card-foreground: 42 42% 94%;
+  --card-border: 225 19% 20%;
+  --popover: 228 25% 12%;
+  --popover-foreground: 42 42% 94%;
+  --popover-border: 225 19% 24%;
+  --primary: 39 93% 61%;
+  --primary-foreground: 228 28% 9%;
+  --secondary: 190 51% 40%;
+  --secondary-foreground: 42 42% 94%;
+  --muted: 228 18% 17%;
+  --muted-foreground: 225 12% 66%;
+  --accent: 168 42% 45%;
+  --accent-foreground: 42 42% 94%;
+  --destructive: 4 72% 60%;
+  --destructive-foreground: 42 42% 94%;
+  --app-font-sans: 'Manrope', sans-serif;
+  --app-font-display: 'Space Grotesk', sans-serif;
+  --app-font-mono: 'DM Mono', monospace;
+  --radius: 0.35rem;
+  --shadow-sm: 0 8px 30px rgba(2, 6, 23, .22);
+}
+
+.dark {
+  --background: 228 28% 9%;
+  --foreground: 42 42% 94%;
+  --card: 228 25% 12%;
+  --card-foreground: 42 42% 94%;
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background-image: radial-gradient(circle at 78% -10%, rgba(41, 104, 115, .22), transparent 32rem), linear-gradient(140deg, #0f1222 0%, #101322 56%, #151728 100%);
+    min-width: 320px;
+  }
+  button, a, input { -webkit-tap-highlight-color: transparent; }
+  button:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: var(--app-font-display); }
+  .font-mono { font-family: var(--app-font-mono); }
+  .text-balance { text-wrap: balance; }
+  .grid-lines {
+    background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .noise::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    opacity: .035;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
+  }
+  .animate-rise { animation: rise .6s cubic-bezier(.22,1,.36,1) both; }
+  .animate-pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse-soft { 0%, 100% { opacity: .62; } 50% { opacity: 1; } }
+
+.city-svg { width: 100%; height: 100%; }
+.city-svg .street { stroke: rgba(228, 220, 190, .14); stroke-width: 1; fill: none; }
+.city-svg .artery { stroke: rgba(244, 180, 74, .5); stroke-width: 2; fill: none; stroke-dasharray: 2 7; }
+.city-svg .district-fill { fill: rgba(30, 83, 90, .26); stroke: rgba(79, 160, 157, .55); stroke-width: 1; }
+.city-svg .district-fill.active { fill: rgba(221, 157, 64, .24); stroke: rgba(246, 183, 72, .95); }
+.city-svg .block { fill: rgba(219, 210, 181, .18); }
+.city-svg .window { fill: #f4bd51; }
+.city-svg .water { fill: rgba(38, 91, 120, .23); stroke: rgba(81, 154, 178, .38); stroke-width: 1; }
