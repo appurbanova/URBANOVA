@@ -6,6 +6,7 @@ import {
   Compass, Cookie, Eye, FileText, Github, Layers3, LockKeyhole, LogOut, Menu, Network, Orbit,
   Radio, Scale, ShieldCheck, Terminal, UserRound, WalletCards, X, Zap
 } from 'lucide-react';
+import { SiApple, SiGoogleplay } from 'react-icons/si';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import NotFound from '@/pages/not-found';
@@ -224,6 +225,23 @@ function CityMap({ active = [], onSelect, compact = false }: { active?: District
 
 function SectionLabel({ children }: { children: ReactNode }) { return <div className="mb-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.22em] text-primary"><span className="h-px w-8 bg-primary" />{children}</div>; }
 
+function StoreBadge({ store }: { store: 'apple' | 'google' }) {
+  const apple = store === 'apple';
+  const Icon = apple ? SiApple : SiGoogleplay;
+  return (
+    <div
+      className="group flex min-w-[158px] items-center gap-3 border border-border/90 bg-[#0d1020]/80 px-3.5 py-2.5 opacity-90 shadow-[0_8px_24px_rgba(0,0,0,.16)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/60 hover:bg-[#12172a]"
+      aria-label={`${apple ? 'App Store' : 'Google Play'} download coming soon`}
+    >
+      <Icon className="size-6 shrink-0 text-foreground transition-colors duration-300 group-hover:text-primary" aria-hidden="true" />
+      <span className="min-w-0">
+        <span className="block font-mono text-[8px] uppercase tracking-[.14em] text-muted-foreground">Coming soon</span>
+        <span className="mt-0.5 block truncate font-display text-[15px] font-semibold leading-none text-foreground">{apple ? 'App Store' : 'Google Play'}</span>
+      </span>
+    </div>
+  );
+}
+
 function Home() {
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictKey>('signal');
   const selected = districtData[selectedDistrict];
@@ -243,7 +261,7 @@ function Home() {
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 grid-lines opacity-25" />
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-16 pt-14 sm:px-8 md:grid-cols-[.9fr_1.1fr] md:gap-8 md:pb-24 md:pt-24">
-        <div className="relative z-10 animate-rise"><SectionLabel>Public activity, made legible</SectionLabel><h1 className="font-display max-w-xl text-[clamp(3.2rem,8vw,7rem)] font-bold leading-[.9] tracking-[-.07em] text-balance">Your work is already a <span className="text-primary">city.</span></h1><p className="mt-7 max-w-md text-base leading-7 text-muted-foreground sm:text-lg">URBANOVA turns the things you build in public into a living, explorable world. See the signal. Find the shape. Keep moving.</p><div className="mt-8 flex flex-wrap items-center gap-3"><Link href="/demo" data-testid="link-hero-demo" className="flex items-center gap-3 bg-primary px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.14em] text-primary-foreground transition-transform hover:-translate-y-1">Explore a sample city <ArrowUpRight size={15} /></Link><Link href="/how-to" data-testid="link-hero-how-to" className="flex items-center gap-2 border border-border px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.14em] text-muted-foreground hover:border-primary hover:text-primary">Read the field guide <ChevronRight size={15} /></Link></div><div className="mt-10 flex items-center gap-4 border-t border-border/70 pt-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><span className="text-foreground">01</span><span className="h-px w-12 bg-border" />A map, not a feed</div></div>
+        <div className="relative z-10 animate-rise"><SectionLabel>Public activity, made legible</SectionLabel><h1 className="font-display max-w-xl text-[clamp(3.2rem,8vw,7rem)] font-bold leading-[.9] tracking-[-.07em] text-balance">Your work is already a <span className="text-primary">city.</span></h1><p className="mt-7 max-w-md text-base leading-7 text-muted-foreground sm:text-lg">URBANOVA turns the things you build in public into a living, explorable world. See the signal. Find the shape. Keep moving.</p><div className="mt-8 flex flex-wrap items-center gap-3"><Link href="/demo" data-testid="link-hero-demo" className="flex items-center gap-3 bg-primary px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.14em] text-primary-foreground transition-transform hover:-translate-y-1">Explore a sample city <ArrowUpRight size={15} /></Link><Link href="/how-to" data-testid="link-hero-how-to" className="flex items-center gap-2 border border-border px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.14em] text-muted-foreground hover:border-primary hover:text-primary">Read the field guide <ChevronRight size={15} /></Link></div><div className="mt-7 flex flex-wrap items-center gap-2.5" aria-label="Mobile apps coming soon"><StoreBadge store="apple" /><StoreBadge store="google" /></div><div className="mt-10 flex items-center gap-4 border-t border-border/70 pt-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><span className="text-foreground">01</span><span className="h-px w-12 bg-border" />A map, not a feed</div></div>
          <div className="relative min-h-[390px] animate-rise [animation-delay:120ms] md:min-h-[540px]"><div className="absolute -inset-12 bg-[radial-gradient(circle,rgba(244,185,78,.13),transparent_55%)]" /><UrbanovaCityPreview /><div className="absolute -bottom-3 right-2 z-20 border border-primary/40 bg-[#12172a]/90 px-4 py-3 backdrop-blur-md"><div className="font-mono text-[9px] uppercase tracking-[.15em] text-primary">City health</div><div className="mt-1 flex items-end gap-2"><span className="font-display text-3xl font-semibold">86.4</span><span className="mb-1 font-mono text-[10px] text-muted-foreground">/ 100</span></div></div></div>
       </div>
     </section>
