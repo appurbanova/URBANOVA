@@ -1,0 +1,69 @@
+name: Deploy URBANOVA to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out URBANOVA
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build for project Pages
+        env:
+          BASE_PATH: /
+          PORT: 4173
+          NODE_ENV: production
+        run: pnpm --filter @workspace/urbanova run build
+
+      - name: Prepare SPA routes and fallback
+        run: |
+          for route in demo about how-to roadmap legal privacy terms cookies login dashboard; do
+            mkdir -p "artifacts/urbanova/dist/public/$route"
+            cp artifacts/urbanova/dist/public/index.html "artifacts/urbanova/dist/public/$route/index.html"
+          done
+          cp artifacts/urbanova/dist/public/index.html artifacts/urbanova/dist/public/404.html
+          touch artifacts/urbanova/dist/public/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: artifacts/urbanova/dist/public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Publish Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4

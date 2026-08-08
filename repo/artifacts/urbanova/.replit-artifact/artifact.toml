@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "URBANOVA"
+description = "A product-grade interactive city for builders, turning GitHub activity into a living urban landscape with wallet-ready access, a personal dashboard, and a public roadmap."
+version = "1.0.0"
+id = "artifacts/urbanova"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25773
+
+[services.development]
+run = "pnpm --filter @workspace/urbanova run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/urbanova", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/urbanova/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25773"
+BASE_PATH = "/"
