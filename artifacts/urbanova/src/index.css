@@ -102,6 +102,8 @@
   }
   .animate-rise { animation: rise .6s cubic-bezier(.22,1,.36,1) both; }
   .animate-pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
+  .home-reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1); }
+  .home-reveal.is-visible { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -115,3 +117,13 @@
 .city-svg .block { fill: rgba(219, 210, 181, .18); }
 .city-svg .window { fill: #f4bd51; }
 .city-svg .water { fill: rgba(38, 91, 120, .23); stroke: rgba(81, 154, 178, .38); stroke-width: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .home-reveal { opacity: 1; transform: none; }
+}

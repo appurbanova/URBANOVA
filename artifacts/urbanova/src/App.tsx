@@ -62,10 +62,17 @@ function Logo({ compact = false }: { compact?: boolean }) {
 
 function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
   const links = [['/demo', 'Demo'], ['/about', 'About'], ['/how-to', 'How it works'], ['/roadmap', 'Roadmap']];
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   return (
-    <header className="relative z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl">
+    <header className={`sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl transition-shadow duration-300 ${scrolled ? 'shadow-[0_12px_35px_rgba(0,0,0,.22)]' : ''}`}>
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 sm:px-8">
         <Logo />
         <nav className="hidden items-center gap-7 md:flex" aria-label="Primary navigation">
@@ -218,6 +225,20 @@ function CityMap({ active = [], onSelect, compact = false }: { active?: District
 function SectionLabel({ children }: { children: ReactNode }) { return <div className="mb-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.22em] text-primary"><span className="h-px w-8 bg-primary" />{children}</div>; }
 
 function Home() {
+  const [selectedDistrict, setSelectedDistrict] = useState<DistrictKey>('signal');
+  const selected = districtData[selectedDistrict];
+  useEffect(() => {
+    const reveal = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          reveal.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.home-reveal').forEach((element) => reveal.observe(element));
+    return () => reveal.disconnect();
+  }, []);
   return <div className="noise"><SiteHeader /><main>
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 grid-lines opacity-25" />
@@ -226,8 +247,8 @@ function Home() {
          <div className="relative min-h-[390px] animate-rise [animation-delay:120ms] md:min-h-[540px]"><div className="absolute -inset-12 bg-[radial-gradient(circle,rgba(244,185,78,.13),transparent_55%)]" /><UrbanovaCityPreview /><div className="absolute -bottom-3 right-2 z-20 border border-primary/40 bg-[#12172a]/90 px-4 py-3 backdrop-blur-md"><div className="font-mono text-[9px] uppercase tracking-[.15em] text-primary">City health</div><div className="mt-1 flex items-end gap-2"><span className="font-display text-3xl font-semibold">86.4</span><span className="mb-1 font-mono text-[10px] text-muted-foreground">/ 100</span></div></div></div>
       </div>
     </section>
-    <section className="border-y border-border/60 bg-[#101323]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[.75fr_1.25fr] md:py-20"><div><SectionLabel>Why a city</SectionLabel><h2 className="font-display text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">A better way to read a builder.</h2></div><div className="grid gap-8 sm:grid-cols-3"><Feature icon={<Orbit size={19} />} title="Find the signal" text="A quiet layer over your public work, connecting releases, writing, and conversation." /><Feature icon={<Layers3 size={19} />} title="See the shape" text="Districts reveal patterns that a chronological feed keeps flat and easy to miss." /><Feature icon={<Compass size={19} />} title="Choose your next" text="Use the city as a personal instrument for deciding where to put your attention." /></div></div></section>
-    <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-24"><div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] md:items-end"><div><SectionLabel>Made for the open web</SectionLabel><h2 className="font-display max-w-2xl text-4xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">The public internet is a place. <span className="text-muted-foreground">URBANOVA gives it contours.</span></h2></div><div className="border-l border-primary/50 pl-5 text-sm leading-6 text-muted-foreground">No vanity metrics. No productivity theatre. Just a thoughtful surface for the work, people, and ideas you have chosen to make visible.</div></div><div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{(Object.keys(districtData) as DistrictKey[]).map((key, i) => <Link href="/demo" key={key} data-testid={`card-home-district-${key}`} className="group border border-border/70 bg-card/45 p-5 transition-colors hover:border-primary/70"><div className="flex items-center justify-between"><span className="font-mono text-[10px] text-muted-foreground">0{i + 1}</span><span className="size-2" style={{ backgroundColor: districtData[key].color }} /></div><h3 className="mt-12 font-display text-xl font-semibold">{districtData[key].name}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{districtData[key].description}</p><div className="mt-6 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.15em] text-primary">Inspect district <ArrowUpRight size={13} /></div></Link>)}</div></section>
+    <section className="home-reveal border-y border-border/60 bg-[#101323]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[.75fr_1.25fr] md:py-20"><div><SectionLabel>Why a city</SectionLabel><h2 className="font-display text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">A better way to read a builder.</h2></div><div className="grid gap-8 sm:grid-cols-3"><Feature icon={<Orbit size={19} />} title="Find the signal" text="A quiet layer over your public work, connecting releases, writing, and conversation." /><Feature icon={<Layers3 size={19} />} title="See the shape" text="Districts reveal patterns that a chronological feed keeps flat and easy to miss." /><Feature icon={<Compass size={19} />} title="Choose your next" text="Use the city as a personal instrument for deciding where to put your attention." /></div></div></section>
+    <section className="home-reveal mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-24"><div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] md:items-end"><div><SectionLabel>Made for the open web</SectionLabel><h2 className="font-display max-w-2xl text-4xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">The public internet is a place. <span className="text-muted-foreground">URBANOVA gives it contours.</span></h2></div><div className="border-l border-primary/50 pl-5 text-sm leading-6 text-muted-foreground">No vanity metrics. No productivity theatre. Just a thoughtful surface for the work, people, and ideas you have chosen to make visible.</div></div><div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{(Object.keys(districtData) as DistrictKey[]).map((key, i) => <Link href="/demo" key={key} onMouseEnter={() => setSelectedDistrict(key)} onFocus={() => setSelectedDistrict(key)} data-testid={`card-home-district-${key}`} className={`group border bg-card/45 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/70 ${selectedDistrict === key ? 'border-primary/70 shadow-[0_16px_42px_rgba(244,185,78,.08)]' : 'border-border/70'}`}><div className="flex items-center justify-between"><span className="font-mono text-[10px] text-muted-foreground">0{i + 1}</span><span className="size-2 transition-transform duration-300 group-hover:scale-150" style={{ backgroundColor: districtData[key].color }} /></div><h3 className="mt-12 font-display text-xl font-semibold">{districtData[key].name}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{districtData[key].description}</p><div className="mt-6 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.15em] text-primary">Inspect district <ArrowUpRight size={13} className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" /></div></Link>)}</div><div className="mt-4 flex flex-col gap-4 border border-primary/30 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between" aria-live="polite"><div><div className="font-mono text-[9px] uppercase tracking-[.18em] text-primary">{selected.eyebrow} / selected layer</div><p className="mt-1 font-display text-xl font-semibold">{selected.name}</p><p className="mt-1 text-sm text-muted-foreground">{selected.stat} · {selected.detail}</p></div><Link href="/demo" className="inline-flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">Open the map <ArrowUpRight size={14} /></Link></div></section>
     <section className="border-t border-border/60 bg-primary px-5 py-14 text-primary-foreground sm:px-8 md:py-20"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[.2em] opacity-70">Start with what is already there</div><h2 className="mt-4 max-w-xl font-display text-4xl font-bold leading-none tracking-[-.05em] sm:text-6xl">Give your work a place to live.</h2></div><Link href="/login" data-testid="link-cta-create-city" className="flex items-center gap-3 border border-primary-foreground/50 px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.15em] transition-colors hover:bg-primary-foreground hover:text-primary">Create your demo city <ArrowUpRight size={15} /></Link></div></section>
   </main><Footer /></div>;
 }
