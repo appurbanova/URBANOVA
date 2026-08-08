@@ -110,6 +110,37 @@
 
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse-soft { 0%, 100% { opacity: .62; } 50% { opacity: 1; } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes float-soft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 24px rgba(244,185,78,.12); } 50% { box-shadow: 0 0 40px rgba(244,185,78,.28); } }
+@keyframes gradient-drift { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(3%, -2%) scale(1.05); } 66% { transform: translate(-2%, 3%) scale(.98); } }
+
+.scroll-progress { position: fixed; top: 0; left: 0; height: 2px; z-index: 60; background: linear-gradient(90deg, #f4b94e, #4bb5a9); transform-origin: 0% 50%; will-change: transform; }
+
+.animate-float-soft { animation: float-soft 5s ease-in-out infinite; }
+.animate-glow-pulse { animation: glow-pulse 4s ease-in-out infinite; }
+.animate-gradient-drift { animation: gradient-drift 18s ease-in-out infinite; }
+
+.stagger-1 { animation-delay: .08s; }
+.stagger-2 { animation-delay: .16s; }
+.stagger-3 { animation-delay: .24s; }
+.stagger-4 { animation-delay: .32s; }
+.stagger-5 { animation-delay: .40s; }
+
+.magnetic { transition: transform .25s cubic-bezier(.22,1,.36,1); will-change: transform; }
+.glow-ring { position: relative; }
+.glow-ring::before { content: ''; position: absolute; inset: -2px; border: 1px solid transparent; opacity: 0; transition: opacity .35s ease, border-color .35s ease; pointer-events: none; }
+.glow-ring:hover::before { opacity: 1; border-color: rgba(244,185,78,.4); }
+
+.shimmer-text { background: linear-gradient(90deg, #eae6d5 0%, #f4b94e 50%, #eae6d5 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 4s linear infinite; }
+
+.parallax-slow { will-change: transform; }
+.parallax-mid { will-change: transform; }
+
+.district-card { transition: transform .4s cubic-bezier(.22,1,.36,1), border-color .3s ease, box-shadow .4s ease; will-change: transform; }
+.district-card:hover { transform: translateY(-6px) scale(1.02); }
+
+.hero-glow { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(60px); opacity: .5; will-change: transform; }
 
 .city-svg { width: 100%; height: 100%; }
 .city-svg .street { stroke: rgba(228, 220, 190, .14); stroke-width: 1; fill: none; }
