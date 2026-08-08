@@ -119,8 +119,12 @@ export function Urbanova3D() {
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const buildingMeshesRef = useRef<BuildingMesh[]>([]);
-  const layerGroupsRef = useRef<Record<Layer, THREE.Group> | null>(null);
+  const interactiveMeshesRef = useRef<THREE.Object3D[]>([]);
+  const vehiclesRef = useRef<THREE.Object3D[]>([]);
+  const waterRef = useRef<THREE.Mesh | null>(null);
+  const layerGroupsRef = useRef<(Record<Layer, THREE.Group> & { park: THREE.Group }) | null>(null);
   const [selectedCode, setSelectedCode] = useState("SQ-01");
+  const [selectedLandmark, setSelectedLandmark] = useState("district");
   const [activeLayer, setActiveLayer] = useState<Layer>("district");
   const [focusMode, setFocusMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -190,6 +194,7 @@ export function Urbanova3D() {
     water.rotation.x = -Math.PI / 2;
     water.position.set(-11.2, 0.06, 0);
     scene.add(water);
+    waterRef.current = water;
 
     const buildingsGroup = new THREE.Group();
     const buildingMeshes: BuildingMesh[] = [];
@@ -217,6 +222,7 @@ export function Urbanova3D() {
     });
     scene.add(buildingsGroup);
     buildingMeshesRef.current = buildingMeshes;
+    interactiveMeshesRef.current = [...buildingMeshes];
 
     const mobilityGroup = new THREE.Group();
     const route = new THREE.Line(
@@ -240,7 +246,95 @@ export function Urbanova3D() {
       station.position.set(x, 0.18, 1.9 - (x + 1.2) * 0.17);
       mobilityGroup.add(station);
     });
+    const vehicleMaterials = {
+      body: new THREE.MeshStandardMaterial({ color: "#f4b94e", roughness: 0.5, metalness: 0.15 }),
+      glass: new THREE.MeshStandardMaterial({ color: "#172b42", roughness: 0.2, metalness: 0.35 }),
+      light: new THREE.MeshBasicMaterial({ color: "#fff1b8" }),
+    };
+    const vehicles: THREE.Group[] = [];
+    for (let index = 0; index < 3; index += 1) {
+      const vehicle = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.18, 0.34), vehicleMaterials.body);
+      body.position.y = 0.18;
+      const cabin = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.14, 0.27), vehicleMaterials.glass);
+      cabin.position.set(-0.04, 0.33, 0);
+      const headlight = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.05, 0.08), vehicleMaterials.light);
+      headlight.position.set(0.37, 0.21, -0.1);
+      vehicle.add(body, cabin, headlight);
+      vehicle.position.set(-9 + index * 6.2, 0, 3.4 - index * 1.6);
+      mobilityGroup.add(vehicle);
+      vehicles.push(vehicle);
+    }
+    vehiclesRef.current = vehicles;
     scene.add(mobilityGroup);
+
+    const parkGroup = new THREE.Group();
+    const parkBase = new THREE.Mesh(
+      new THREE.BoxGeometry(5.4, 0.12, 4.2),
+      new THREE.MeshStandardMaterial({ color: "#245148", roughness: 1 }),
+    );
+    parkBase.position.set(1.4, 0.11, 3.45);
+    parkBase.userData = { district: "CM-03", landmark: "Civic Canopy" };
+    parkGroup.add(parkBase);
+    const lawn = new THREE.Mesh(
+      new THREE.BoxGeometry(4.85, 0.05, 3.65),
+      new THREE.MeshStandardMaterial({ color: "#2f7b67", roughness: 1 }),
+    );
+    lawn.position.set(1.4, 0.2, 3.45);
+    lawn.userData = { district: "CM-03", landmark: "Civic Canopy" };
+    parkGroup.add(lawn);
+    const paths = new THREE.Mesh(
+      new THREE.BoxGeometry(4.9, 0.035, 0.22),
+      new THREE.MeshStandardMaterial({ color: "#c7a979", roughness: 1 }),
+    );
+    paths.position.set(1.4, 0.24, 3.45);
+    parkGroup.add(paths);
+    const crossPath = paths.clone();
+    crossPath.rotation.y = Math.PI / 2;
+    crossPath.scale.x = 0.74;
+    crossPath.position.set(1.4, 0.245, 3.45);
+    parkGroup.add(crossPath);
+    const fountain = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.52, 0.62, 0.1, 24),
+      new THREE.MeshStandardMaterial({ color: "#4a9aaa", roughness: 0.22, metalness: 0.25 }),
+    );
+    fountain.position.set(1.4, 0.3, 3.45);
+    fountain.userData = { district: "CM-03", landmark: "Civic Canopy" };
+    parkGroup.add(fountain);
+    const fountainLight = new THREE.PointLight("#78e3d3", 0.6, 3.2);
+    fountainLight.position.set(1.4, 0.7, 3.45);
+    parkGroup.add(fountainLight);
+    [
+      [-0.45, 2.35, 0.9],
+      [3.15, 2.35, 0.82],
+      [-0.45, 4.55, 0.78],
+      [3.25, 4.55, 0.9],
+    ].forEach(([x, z, scale]) => createTree(parkGroup, x, z, scale));
+    [
+      [-0.15, 3.05, 0.65],
+      [2.95, 3.05, 0.65],
+      [-0.15, 3.85, 0.65],
+      [2.95, 3.85, 0.65],
+    ].forEach(([x, z, scale]) => {
+      const bench = new THREE.Group();
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.72 * scale, 0.09, 0.18), new THREE.MeshStandardMaterial({ color: "#9a7147", roughness: 0.9 }));
+      seat.position.set(x, 0.42, z);
+      const legA = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.22, 0.06), seat.material);
+      legA.position.set(x - 0.24 * scale, 0.28, z);
+      const legB = legA.clone();
+      legB.position.x = x + 0.24 * scale;
+      bench.add(seat, legA, legB);
+      parkGroup.add(bench);
+    });
+    const parkHit = new THREE.Mesh(
+      new THREE.BoxGeometry(5.4, 0.08, 4.2),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.01, depthWrite: false }),
+    );
+    parkHit.position.set(1.4, 0.35, 3.45);
+    parkHit.userData = { district: "CM-03", landmark: "Civic Canopy" };
+    parkGroup.add(parkHit);
+    interactiveMeshesRef.current.push(parkHit);
+    scene.add(parkGroup);
 
     const greenGroup = new THREE.Group();
     [
@@ -253,7 +347,7 @@ export function Urbanova3D() {
       [8.8, -3.3, 0.8],
     ].forEach(([x, z, scale]) => createTree(greenGroup, x, z, scale));
     scene.add(greenGroup);
-    layerGroupsRef.current = { district: buildingsGroup, mobility: mobilityGroup, green: greenGroup };
+    layerGroupsRef.current = { district: buildingsGroup, mobility: mobilityGroup, green: greenGroup, park: parkGroup };
 
     const resize = () => {
       const width = host.clientWidth;
@@ -282,16 +376,26 @@ export function Urbanova3D() {
       pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const hit = raycaster.intersectObjects(buildingMeshesRef.current, false)[0]?.object as BuildingMesh | undefined;
-      if (hit) setSelectedCode(hit.userData.district);
+      const hit = raycaster.intersectObjects(interactiveMeshesRef.current, true)[0]?.object as (THREE.Object3D & { userData: { district?: string; landmark?: string } }) | undefined;
+      if (hit?.userData.district) {
+        setSelectedCode(hit.userData.district);
+        setSelectedLandmark(hit.userData.landmark ? "park" : "district");
+      }
     };
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointerup", onPointerUp);
 
     let frame = 0;
-    const animate = () => {
+    const animate = (time = 0) => {
       frame = requestAnimationFrame(animate);
       controls.update();
+      water.rotation.z = Math.sin(time * 0.00035) * 0.006;
+      vehicles.forEach((vehicle, index) => {
+        const progress = (time * 0.000035 + index * 0.31) % 1;
+        vehicle.position.x = -9 + progress * 18.5;
+        vehicle.position.z = 3.4 - progress * 4.9 + Math.sin(progress * Math.PI) * 0.5;
+        vehicle.rotation.y = -0.25;
+      });
       renderer.render(scene, camera);
     };
     animate();
@@ -312,6 +416,9 @@ export function Urbanova3D() {
         }
       });
       buildingMeshesRef.current = [];
+      interactiveMeshesRef.current = [];
+      vehiclesRef.current = [];
+      waterRef.current = null;
     };
   }, []);
 
@@ -327,6 +434,7 @@ export function Urbanova3D() {
       groups.mobility.visible = activeLayer === "mobility";
       groups.green.visible = activeLayer === "green";
       groups.district.visible = true;
+      groups.park.visible = true;
     }
     const controls = controlsRef.current;
     if (controls && focusMode) {
@@ -409,9 +517,9 @@ export function Urbanova3D() {
               <span className="font-mono text-[10px] uppercase tracking-[.18em] text-[#8891a7]">Now viewing</span>
               <span className="border border-[#f4b94e]/50 bg-[#f4b94e]/10 px-2 py-1 font-mono text-[9px] text-[#f4b94e]">{selectedDistrict.code}</span>
             </div>
-            <h2 className="font-['Space_Grotesk'] text-2xl font-semibold tracking-[-.04em]">{selectedDistrict.name}</h2>
-            <p className="mt-1 text-sm text-[#9aa1b3]">{selectedDistrict.subtitle}</p>
-            <p className="mt-4 max-w-[320px] text-[13px] leading-6 text-[#8891a7]">{selectedDistrict.detail}</p>
+             <h2 className="font-['Space_Grotesk'] text-2xl font-semibold tracking-[-.04em]">{selectedLandmark === "park" ? "Civic Canopy" : selectedDistrict.name}</h2>
+             <p className="mt-1 text-sm text-[#9aa1b3]">{selectedLandmark === "park" ? "Urban green room" : selectedDistrict.subtitle}</p>
+             <p className="mt-4 max-w-[320px] text-[13px] leading-6 text-[#8891a7]">{selectedLandmark === "park" ? "A shaded civic park where public activity slows down: four tree groves, a reflective fountain, and room for neighbors to meet." : selectedDistrict.detail}</p>
             <div className="mt-5 flex items-end justify-between">
               <div><span className="block font-['Space_Grotesk'] text-2xl text-[#f2eee4]">{selectedDistrict.stat.split(" ")[0]}</span><span className="font-mono text-[9px] uppercase tracking-[.15em] text-[#8891a7]">{selectedDistrict.stat.substring(selectedDistrict.stat.indexOf(" ") + 1)}</span></div>
               <button type="button" onClick={() => setFocusMode(!focusMode)} className="group flex items-center gap-2 bg-[#f4b94e] px-4 py-2.5 font-mono text-[9px] uppercase tracking-[.13em] text-[#101526] transition hover:bg-[#ffd06f]">
@@ -435,7 +543,7 @@ export function Urbanova3D() {
             <button type="button" onClick={() => zoom(1.18)} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Zoom out"><Minus size={15} /></button>
             <button type="button" onClick={resetView} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Reset view"><RotateCcw size={15} /></button>
           </div>
-          <div className="absolute bottom-5 right-5 z-20 hidden items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#9aa1b3] backdrop-blur-md sm:flex"><MapPin size={13} /> Drag to orbit · tap a building</div>
+           <div className="absolute bottom-5 right-5 z-20 hidden items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#9aa1b3] backdrop-blur-md sm:flex"><MapPin size={13} /> Drag to orbit · tap a building or park</div>
         </div>
       </section>
 
