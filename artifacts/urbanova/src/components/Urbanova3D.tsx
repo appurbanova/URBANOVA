@@ -99,6 +99,62 @@ function createRoad(scene: THREE.Scene, x: number, z: number, width: number, dep
   scene.add(road);
 }
 
+function createRoadMarkings(
+  scene: THREE.Scene,
+  x: number,
+  z: number,
+  count: number,
+  spacing: number,
+  rotation = 0,
+  vertical = false,
+) {
+  const markings = new THREE.Group();
+  const material = new THREE.MeshBasicMaterial({ color: "#d8c993", transparent: true, opacity: 0.52 });
+  for (let index = 0; index < count; index += 1) {
+    const offset = (index - (count - 1) / 2) * spacing;
+    const mark = new THREE.Mesh(
+      new THREE.BoxGeometry(vertical ? 0.06 : 0.62, 0.018, vertical ? 0.62 : 0.06),
+      material,
+    );
+    mark.position.set(vertical ? 0 : offset, 0.13, vertical ? offset : 0);
+    markings.add(mark);
+  }
+  markings.position.set(x, 0, z);
+  markings.rotation.y = rotation;
+  scene.add(markings);
+}
+
+function createSkylineBuilding(
+  scene: THREE.Scene,
+  x: number,
+  z: number,
+  width: number,
+  depth: number,
+  height: number,
+  color: string,
+) {
+  const group = new THREE.Group();
+  const material = new THREE.MeshStandardMaterial({ color, roughness: 0.88, metalness: 0.04 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+  body.position.set(x, height / 2, z);
+  group.add(body);
+
+  const roof = new THREE.Mesh(
+    new THREE.BoxGeometry(width * 0.86, 0.06, depth * 0.86),
+    new THREE.MeshStandardMaterial({ color: "#17253a", roughness: 0.7, metalness: 0.12 }),
+  );
+  roof.position.set(x, height + 0.04, z);
+  group.add(roof);
+
+  const windows = new THREE.Mesh(
+    new THREE.BoxGeometry(width * 0.56, Math.min(1.2, height * 0.34), 0.025),
+    new THREE.MeshBasicMaterial({ color: "#d4ad5d", transparent: true, opacity: 0.18 }),
+  );
+  windows.position.set(x, Math.max(0.8, height * 0.54), z - depth / 2 - 0.018);
+  group.add(windows);
+  scene.add(group);
+}
+
 function createTree(group: THREE.Group, x: number, z: number, scale = 1) {
   const trunk = new THREE.Mesh(
     new THREE.CylinderGeometry(0.08 * scale, 0.11 * scale, 0.55 * scale, 8),
@@ -163,6 +219,8 @@ export function Urbanova3D() {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.07;
+    controls.enablePan = false;
+    controls.rotateSpeed = 0.58;
     controls.target.set(0, 1.2, 0);
     controls.minDistance = 7;
     controls.maxDistance = 28;
@@ -194,6 +252,25 @@ export function Urbanova3D() {
     createRoad(scene, 0, -0.6, 25, 0.72, -0.08);
     createRoad(scene, -1.2, 1.9, 0.65, 19, 0.17);
     createRoad(scene, 5.4, -0.4, 0.55, 18, -0.23);
+    createRoadMarkings(scene, 0, -0.6, 15, 1.45, -0.08);
+    createRoadMarkings(scene, -1.2, 1.9, 11, 1.55, 0.17, true);
+    createRoadMarkings(scene, 5.4, -0.4, 10, 1.65, -0.23, true);
+
+    const skylineBuildings: Array<[number, number, number, number, number, string]> = [
+      [-10.2, -5.1, 2.2, 2.1, 3.8, "#1d3347"],
+      [-7.4, -5.3, 1.8, 1.8, 5.2, "#223b52"],
+      [-4.7, -5.5, 2.4, 1.9, 3.4, "#25334a"],
+      [0.4, -5.3, 2.2, 2, 4.6, "#1c3047"],
+      [4.5, -5.2, 2.6, 2.1, 3.1, "#27384d"],
+      [8.1, -5, 1.9, 1.8, 5.6, "#21364d"],
+      [10.4, 4.4, 2.4, 2.2, 4.4, "#1c3147"],
+      [6.8, 4.6, 1.7, 1.8, 3.5, "#25364c"],
+      [-4.8, 5.1, 2.2, 1.8, 4.9, "#1f354b"],
+      [-8.1, 4.6, 1.8, 1.6, 3.2, "#29384c"],
+    ];
+    skylineBuildings.forEach(([x, z, width, depth, height, color]) => {
+      createSkylineBuilding(scene, x, z, width, depth, height, color);
+    });
 
     const water = new THREE.Mesh(
       new THREE.PlaneGeometry(8, 25),
@@ -467,6 +544,27 @@ export function Urbanova3D() {
     nightLightsRef.current = nightLights;
     scene.add(nightLights);
 
+    const signalNodes: THREE.Mesh[] = [];
+    const signalGroup = new THREE.Group();
+    [
+      [-7.2, 2.5, "#f4b94e"],
+      [-4.5, -1.2, "#4bb5a9"],
+      [-1.2, 2.1, "#e4786d"],
+      [2.8, -0.5, "#f4b94e"],
+      [6.7, 2.6, "#9b8ad6"],
+      [8.1, -1.1, "#4bb5a9"],
+    ].forEach(([x, z, color]) => {
+      const node = new THREE.Mesh(
+        new THREE.RingGeometry(0.16, 0.2, 20),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.72, side: THREE.DoubleSide }),
+      );
+      node.rotation.x = -Math.PI / 2;
+      node.position.set(Number(x), 0.18, Number(z));
+      signalGroup.add(node);
+      signalNodes.push(node);
+    });
+    scene.add(signalGroup);
+
     const greenGroup = new THREE.Group();
     [
       [-7.8, 3.1, 1.1],
@@ -526,6 +624,12 @@ export function Urbanova3D() {
         vehicle.position.x = -9 + progress * 18.5;
         vehicle.position.z = 3.4 - progress * 4.9 + Math.sin(progress * Math.PI) * 0.5;
         vehicle.rotation.y = -0.25;
+      });
+      signalNodes.forEach((node, index) => {
+        const pulse = (Math.sin(time * 0.0015 + index * 1.7) + 1) / 2;
+        const scale = 0.86 + pulse * 0.48;
+        node.scale.setScalar(scale);
+        (node.material as THREE.MeshBasicMaterial).opacity = 0.22 + pulse * 0.62;
       });
       renderer.render(scene, camera);
     };
