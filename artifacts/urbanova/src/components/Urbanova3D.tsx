@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
   ArrowUpRight,
+  ArrowLeft,
   Building2,
   ChevronDown,
   Layers3,
@@ -358,22 +359,28 @@ export function Urbanova3D() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#0f1324] text-[#f2eee4] selection:bg-[#f4b94e] selection:text-[#101526]">
       <header className="relative z-30 flex items-center justify-between border-b border-[#2b344b] bg-[#0d1020]/90 px-5 py-4 backdrop-blur-md md:px-9">
-        <div className="flex items-center gap-3">
+        <a href="/" aria-label="Back to URBANOVA home" className="group flex items-center gap-3">
           <div className="relative grid h-9 w-9 place-items-center border border-[#f4b94e]/75 bg-[#f4b94e]/10">
-            <span className="h-3 w-3 bg-[#f4b94e]" />
+            <span className="h-3 w-3 bg-[#f4b94e] transition-transform group-hover:scale-75" />
             <span className="absolute inset-1.5 border border-[#f4b94e]/30" />
           </div>
           <div>
             <p className="font-['Space_Grotesk'] text-[16px] font-bold tracking-[.22em] text-[#f2eee4]">URBANOVA</p>
             <p className="font-mono text-[9px] uppercase tracking-[.18em] text-[#8891a7]">Living city / 04 districts</p>
           </div>
-        </div>
+        </a>
         <nav className="hidden items-center gap-7 font-mono text-[10px] uppercase tracking-[.18em] text-[#8891a7] md:flex">
+          <a href="/" className="flex items-center gap-2 border border-[#f4b94e]/60 px-3 py-2 text-[#f4b94e] transition hover:bg-[#f4b94e]/10" aria-label="Back to home">
+            <ArrowLeft size={13} /> Back to home
+          </a>
           <button type="button" className="text-[#f4b94e] underline decoration-[#f4b94e] decoration-2 underline-offset-8">Explore</button>
           <button type="button" className="hover:text-[#f4b94e]">Districts</button>
           <button type="button" className="hover:text-[#f4b94e]">Field notes</button>
         </nav>
         <div className="flex items-center gap-3">
+          <a href="/" className="flex items-center gap-1.5 border border-[#f4b94e]/60 px-2.5 py-2 font-mono text-[9px] uppercase tracking-[.11em] text-[#f4b94e] transition hover:bg-[#f4b94e]/10 md:hidden" aria-label="Back to home">
+            <ArrowLeft size={13} /> Home
+          </a>
           <span className="hidden items-center gap-2 font-mono text-[9px] uppercase tracking-[.12em] text-[#8891a7] sm:flex">
             <Radio size={12} className="text-[#4bb5a9]" /> Live city model
           </span>
