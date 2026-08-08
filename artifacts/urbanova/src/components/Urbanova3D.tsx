@@ -122,10 +122,14 @@ export function Urbanova3D() {
   const interactiveMeshesRef = useRef<THREE.Object3D[]>([]);
   const vehiclesRef = useRef<THREE.Object3D[]>([]);
   const waterRef = useRef<THREE.Mesh | null>(null);
+  const sunRef = useRef<THREE.DirectionalLight | null>(null);
+  const hemisphereRef = useRef<THREE.HemisphereLight | null>(null);
+  const nightLightsRef = useRef<THREE.Group | null>(null);
   const layerGroupsRef = useRef<(Record<Layer, THREE.Group> & { park: THREE.Group }) | null>(null);
   const [selectedCode, setSelectedCode] = useState("SQ-01");
   const [selectedLandmark, setSelectedLandmark] = useState("district");
   const [activeLayer, setActiveLayer] = useState<Layer>("district");
+  const [nightMode, setNightMode] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [webglReady, setWebglReady] = useState(true);
@@ -164,10 +168,13 @@ export function Urbanova3D() {
     controls.maxPolarAngle = Math.PI / 2.05;
     controlsRef.current = controls;
 
-    scene.add(new THREE.HemisphereLight("#f8e8c4", "#16283d", 2.6));
+    const hemisphere = new THREE.HemisphereLight("#f8e8c4", "#16283d", 2.6);
+    hemisphereRef.current = hemisphere;
+    scene.add(hemisphere);
     const sun = new THREE.DirectionalLight("#f4b94e", 3.8);
     sun.position.set(-8, 17, 9);
     sun.castShadow = true;
+    sunRef.current = sun;
     scene.add(sun);
 
     const ground = new THREE.Mesh(
@@ -336,6 +343,35 @@ export function Urbanova3D() {
     interactiveMeshesRef.current.push(parkHit);
     scene.add(parkGroup);
 
+    const nightLights = new THREE.Group();
+    [
+      [-8.8, -0.05],
+      [-5.6, -0.4],
+      [-2.5, -0.75],
+      [0.7, -1.1],
+      [3.8, -1.45],
+      [7.1, -1.8],
+      [-1.7, 2.5],
+      [4.8, 1.7],
+    ].forEach(([x, z]) => {
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.035, 0.85, 8),
+        new THREE.MeshStandardMaterial({ color: "#7e8795", roughness: 0.6, metalness: 0.65 }),
+      );
+      pole.position.set(x, 0.5, z);
+      const lamp = new THREE.Mesh(
+        new THREE.SphereGeometry(0.105, 12, 8),
+        new THREE.MeshBasicMaterial({ color: "#ffe4a1" }),
+      );
+      lamp.position.set(x, 0.96, z);
+      const glow = new THREE.PointLight("#ffc86e", 0.9, 2.7, 2);
+      glow.position.set(x, 0.95, z);
+      nightLights.add(pole, lamp, glow);
+    });
+    nightLights.visible = false;
+    nightLightsRef.current = nightLights;
+    scene.add(nightLights);
+
     const greenGroup = new THREE.Group();
     [
       [-7.8, 3.1, 1.1],
@@ -419,6 +455,9 @@ export function Urbanova3D() {
       interactiveMeshesRef.current = [];
       vehiclesRef.current = [];
       waterRef.current = null;
+      sunRef.current = null;
+      hemisphereRef.current = null;
+      nightLightsRef.current = null;
     };
   }, []);
 
@@ -444,6 +483,25 @@ export function Urbanova3D() {
       }
     }
   }, [activeLayer, focusMode, selectedCode]);
+
+  useEffect(() => {
+    const scene = sceneRef.current;
+    const sun = sunRef.current;
+    const hemisphere = hemisphereRef.current;
+    const nightLights = nightLightsRef.current;
+    if (!scene || !sun || !hemisphere || !nightLights) return;
+    const sky = nightMode ? "#080d1b" : "#11172a";
+    scene.background = new THREE.Color(sky);
+    scene.fog = new THREE.Fog(sky, 18, 34);
+    sun.intensity = nightMode ? 0.42 : 3.8;
+    hemisphere.intensity = nightMode ? 0.85 : 2.6;
+    nightLights.visible = nightMode;
+    buildingMeshesRef.current.forEach((mesh) => {
+      const selected = mesh.userData.district === selectedCode;
+      mesh.material.emissive.set(nightMode ? "#b36a2e" : selected ? "#f4b94e" : "#000000");
+      mesh.material.emissiveIntensity = nightMode ? 0.12 : selected ? 0.42 : 0;
+    });
+  }, [nightMode, selectedCode]);
 
   const zoom = (factor: number) => {
     const controls = controlsRef.current;
@@ -517,9 +575,9 @@ export function Urbanova3D() {
               <span className="font-mono text-[10px] uppercase tracking-[.18em] text-[#8891a7]">Now viewing</span>
               <span className="border border-[#f4b94e]/50 bg-[#f4b94e]/10 px-2 py-1 font-mono text-[9px] text-[#f4b94e]">{selectedDistrict.code}</span>
             </div>
-             <h2 className="font-['Space_Grotesk'] text-2xl font-semibold tracking-[-.04em]">{selectedLandmark === "park" ? "Civic Canopy" : selectedDistrict.name}</h2>
-             <p className="mt-1 text-sm text-[#9aa1b3]">{selectedLandmark === "park" ? "Urban green room" : selectedDistrict.subtitle}</p>
-             <p className="mt-4 max-w-[320px] text-[13px] leading-6 text-[#8891a7]">{selectedLandmark === "park" ? "A shaded civic park where public activity slows down: four tree groves, a reflective fountain, and room for neighbors to meet." : selectedDistrict.detail}</p>
+            <h2 className="font-['Space_Grotesk'] text-2xl font-semibold tracking-[-.04em]">{selectedLandmark === "park" ? "Civic Canopy" : selectedDistrict.name}</h2>
+            <p className="mt-1 text-sm text-[#9aa1b3]">{selectedLandmark === "park" ? "Urban green room" : selectedDistrict.subtitle}</p>
+            <p className="mt-4 max-w-[320px] text-[13px] leading-6 text-[#8891a7]">{selectedLandmark === "park" ? "A shaded civic park where public activity slows down: four tree groves, a reflective fountain, and room for neighbors to meet." : selectedDistrict.detail}</p>
             <div className="mt-5 flex items-end justify-between">
               <div><span className="block font-['Space_Grotesk'] text-2xl text-[#f2eee4]">{selectedDistrict.stat.split(" ")[0]}</span><span className="font-mono text-[9px] uppercase tracking-[.15em] text-[#8891a7]">{selectedDistrict.stat.substring(selectedDistrict.stat.indexOf(" ") + 1)}</span></div>
               <button type="button" onClick={() => setFocusMode(!focusMode)} className="group flex items-center gap-2 bg-[#f4b94e] px-4 py-2.5 font-mono text-[9px] uppercase tracking-[.13em] text-[#101526] transition hover:bg-[#ffd06f]">
@@ -537,13 +595,17 @@ export function Urbanova3D() {
             <span className={`h-1.5 w-1.5 ${webglReady ? "animate-pulse bg-[#4bb5a9]" : "bg-[#e4786d]"}`} />
             <span className="font-mono text-[9px] uppercase tracking-[.14em] text-[#c0c4cf]">{webglReady ? "Simulation live" : "WebGL unavailable"}</span>
           </div>
+          <button type="button" onClick={() => setNightMode((current) => !current)} className="absolute left-5 top-5 z-20 flex items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#c0c4cf] backdrop-blur-md transition hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-pressed={nightMode}>
+            <span className={`h-1.5 w-1.5 rounded-full ${nightMode ? "bg-[#f4b94e]" : "bg-[#4bb5a9]"}`} />
+            {nightMode ? "Night city" : "Day city"}
+          </button>
           {!webglReady && <div className="absolute inset-0 z-10 grid place-items-center bg-[#0f1324]/85 p-8 text-center"><div><p className="font-['Space_Grotesk'] text-xl font-medium text-[#f2eee4]">This city needs a WebGL-capable browser.</p><p className="mt-2 max-w-sm text-sm text-[#9aa1b3]">Try the latest Chrome, Safari, or Firefox to explore the model.</p></div></div>}
           <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2">
             <button type="button" onClick={() => zoom(0.82)} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Zoom in"><Plus size={15} /></button>
             <button type="button" onClick={() => zoom(1.18)} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Zoom out"><Minus size={15} /></button>
             <button type="button" onClick={resetView} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Reset view"><RotateCcw size={15} /></button>
           </div>
-           <div className="absolute bottom-5 right-5 z-20 hidden items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#9aa1b3] backdrop-blur-md sm:flex"><MapPin size={13} /> Drag to orbit · tap a building or park</div>
+          <div className="absolute bottom-5 right-5 z-20 hidden items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#9aa1b3] backdrop-blur-md sm:flex"><MapPin size={13} /> Drag to orbit · tap a building or park</div>
         </div>
       </section>
 
@@ -558,10 +620,15 @@ export function Urbanova3D() {
             <button type="button" key={id} onClick={() => setActiveLayer(id)} className={`flex shrink-0 items-center gap-2 border-b-2 px-1 pb-2 font-mono text-[10px] uppercase tracking-[.13em] transition ${activeLayer === id ? "border-[#f4b94e] text-[#f4b94e]" : "border-transparent text-[#8891a7] hover:text-[#f2eee4]"}`}><Icon size={14} />{label}</button>
           ))}
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.16em] text-[#8891a7]"><Waves size={14} /> City health <strong className="font-semibold text-[#4bb5a9]">86.4</strong></span>
           <span className="h-4 w-px bg-[#2b344b]" />
-          <button type="button" className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.16em] text-[#8891a7] hover:text-[#f4b94e]"><Layers3 size={14} /> Compare <ChevronDown size={12} /></button>
+          <div className="hidden items-center gap-3 font-mono text-[9px] uppercase tracking-[.12em] text-[#8891a7] sm:flex" aria-label="Map legend">
+            <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#2f7b67]" /> Park</span>
+            <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#f4b94e]" /> Signals</span>
+            <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#4bb5a9]" /> Mobility</span>
+          </div>
+          <button type="button" onClick={() => setNightMode((current) => !current)} className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.16em] text-[#8891a7] hover:text-[#f4b94e]"><Layers3 size={14} /> {nightMode ? "Daylight" : "Night view"} <ChevronDown size={12} /></button>
         </div>
       </section>
       <div className="mx-auto flex max-w-[1480px] items-center justify-center gap-2 px-5 pb-8 text-center font-mono text-[9px] uppercase tracking-[.18em] text-[#8891a7] md:px-9"><Sparkles size={12} className="text-[#f4b94e]" /> Public activity, made legible</div>
