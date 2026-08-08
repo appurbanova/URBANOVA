@@ -76,13 +76,13 @@ const districts: District[] = [
 ];
 
 const buildings = [
-  { x: -7.2, z: -1.2, w: 2.3, d: 2.2, h: 4.1, tone: "#5a4a39", name: "Signal House", district: "SQ-01" },
-  { x: -4.8, z: -2.8, w: 1.9, d: 1.8, h: 5.6, tone: "#263c58", name: "Workshop Tower", district: "WR-02" },
-  { x: -2.2, z: 1.3, w: 2.6, d: 2.3, h: 3.1, tone: "#765146", name: "Commons Hall", district: "CM-03" },
-  { x: 0.5, z: -1.6, w: 2.25, d: 2.5, h: 6.9, tone: "#284d59", name: "Archive Exchange", district: "AH-04" },
-  { x: 3.4, z: 0.2, w: 2.1, d: 2.3, h: 4.4, tone: "#8a662d", name: "Signal Arcade", district: "SQ-01" },
-  { x: 5.9, z: -2.4, w: 2.8, d: 2.2, h: 2.9, tone: "#315b62", name: "Workshop Court", district: "WR-02" },
-  { x: 7.5, z: 1.8, w: 2.1, d: 2.4, h: 5.2, tone: "#514766", name: "Archive House", district: "AH-04" },
+  { x: -7.2, z: -1.2, w: 2.3, d: 2.2, h: 4.1, tone: "#5a4a39", name: "Signal House", district: "SQ-01", roof: "antenna" },
+  { x: -4.8, z: -2.8, w: 1.9, d: 1.8, h: 5.6, tone: "#263c58", name: "Workshop Tower", district: "WR-02", roof: "tower" },
+  { x: -2.2, z: 1.3, w: 2.6, d: 2.3, h: 3.1, tone: "#765146", name: "Commons Hall", district: "CM-03", roof: "civic" },
+  { x: 0.5, z: -1.6, w: 2.25, d: 2.5, h: 6.9, tone: "#284d59", name: "Archive Exchange", district: "AH-04", roof: "exchange" },
+  { x: 3.4, z: 0.2, w: 2.1, d: 2.3, h: 4.4, tone: "#8a662d", name: "Signal Arcade", district: "SQ-01", roof: "arcade" },
+  { x: 5.9, z: -2.4, w: 2.8, d: 2.2, h: 2.9, tone: "#315b62", name: "Workshop Court", district: "WR-02", roof: "low" },
+  { x: 7.5, z: 1.8, w: 2.1, d: 2.4, h: 5.2, tone: "#514766", name: "Archive House", district: "AH-04", roof: "archive" },
 ] as const;
 
 type BuildingMesh = THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial> & {
@@ -125,6 +125,7 @@ export function Urbanova3D() {
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   const hemisphereRef = useRef<THREE.HemisphereLight | null>(null);
   const nightLightsRef = useRef<THREE.Group | null>(null);
+  const windowMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const layerGroupsRef = useRef<(Record<Layer, THREE.Group> & { park: THREE.Group }) | null>(null);
   const [selectedCode, setSelectedCode] = useState("SQ-01");
   const [selectedLandmark, setSelectedLandmark] = useState("district");
@@ -205,7 +206,16 @@ export function Urbanova3D() {
 
     const buildingsGroup = new THREE.Group();
     const buildingMeshes: BuildingMesh[] = [];
+    const windowMaterial = new THREE.MeshStandardMaterial({
+      color: "#162c40",
+      roughness: 0.26,
+      metalness: 0.3,
+      emissive: "#f4b94e",
+      emissiveIntensity: 0.1,
+    });
+    windowMaterialRef.current = windowMaterial;
     buildings.forEach((building) => {
+      const districtAccent = districts.find((district) => district.code === building.district)?.color ?? "#f4b94e";
       const material = new THREE.MeshStandardMaterial({
         color: building.tone,
         roughness: 0.75,
@@ -220,12 +230,97 @@ export function Urbanova3D() {
       buildingMeshes.push(mesh);
       buildingsGroup.add(mesh);
 
+      const podium = new THREE.Mesh(
+        new THREE.BoxGeometry(building.w + 0.28, 0.28, building.d + 0.28),
+        new THREE.MeshStandardMaterial({ color: "#17253a", roughness: 0.88, metalness: 0.08 }),
+      );
+      podium.position.set(building.x, 0.14, building.z);
+      podium.castShadow = true;
+      buildingsGroup.add(podium);
+
+      const accentStrip = new THREE.Mesh(
+        new THREE.BoxGeometry(0.07, building.h * 0.72, 0.045),
+        new THREE.MeshStandardMaterial({ color: districtAccent, roughness: 0.45, metalness: 0.3 }),
+      );
+      accentStrip.position.set(building.x - building.w * 0.28, building.h * 0.54, building.z - building.d / 2 - 0.035);
+      buildingsGroup.add(accentStrip);
+
+      const rows = Math.max(2, Math.floor(building.h / 1.15));
+      const columns = Math.max(2, Math.floor(building.w / 0.7));
+      for (let row = 0; row < rows; row += 1) {
+        const y = 0.72 + row * 1.02;
+        if (y > building.h - 0.3) continue;
+        for (let column = 0; column < columns; column += 1) {
+          const x = -building.w / 2 + 0.36 + column * (building.w / columns);
+          const frontWindow = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.3, 0.045), windowMaterial);
+          frontWindow.position.set(building.x + x, y, building.z - building.d / 2 - 0.025);
+          buildingsGroup.add(frontWindow);
+          if (column < Math.max(1, columns - 1)) {
+            const sideWindow = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.3, 0.22), windowMaterial);
+            sideWindow.position.set(building.x + building.w / 2 + 0.025, y, building.z + x * 0.72);
+            buildingsGroup.add(sideWindow);
+          }
+        }
+      }
+
       const roof = new THREE.Mesh(
         new THREE.BoxGeometry(building.w * 0.84, 0.08, building.d * 0.84),
-        new THREE.MeshStandardMaterial({ color: "#101a2b", roughness: 0.9 }),
+        new THREE.MeshStandardMaterial({ color: districtAccent, roughness: 0.72, metalness: 0.25 }),
       );
       roof.position.set(building.x, building.h + 0.06, building.z);
       buildingsGroup.add(roof);
+
+      if (building.roof === "antenna" || building.roof === "tower") {
+        const mast = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.035, 0.05, building.roof === "tower" ? 1.2 : 0.85, 8),
+          new THREE.MeshStandardMaterial({ color: "#aeb9c1", roughness: 0.45, metalness: 0.65 }),
+        );
+        mast.position.set(building.x, building.h + (building.roof === "tower" ? 0.7 : 0.52), building.z);
+        buildingsGroup.add(mast);
+        const beacon = new THREE.Mesh(
+          new THREE.SphereGeometry(0.09, 10, 8),
+          new THREE.MeshBasicMaterial({ color: districtAccent }),
+        );
+        beacon.position.set(mast.position.x, mast.position.y + (building.roof === "tower" ? 0.63 : 0.46), mast.position.z);
+        buildingsGroup.add(beacon);
+      } else if (building.roof === "exchange") {
+        const crown = new THREE.Mesh(
+          new THREE.BoxGeometry(building.w * 0.48, 0.38, building.d * 0.48),
+          new THREE.MeshStandardMaterial({ color: "#18263d", roughness: 0.5, metalness: 0.35 }),
+        );
+        crown.position.set(building.x, building.h + 0.28, building.z);
+        buildingsGroup.add(crown);
+        const crownLight = new THREE.Mesh(
+          new THREE.BoxGeometry(building.w * 0.3, 0.045, building.d * 0.3),
+          new THREE.MeshBasicMaterial({ color: districtAccent }),
+        );
+        crownLight.position.set(building.x, building.h + 0.49, building.z);
+        buildingsGroup.add(crownLight);
+      } else if (building.roof === "civic" || building.roof === "arcade") {
+        const canopy = new THREE.Mesh(
+          new THREE.BoxGeometry(building.w * 0.68, 0.1, building.d * 0.68),
+          new THREE.MeshStandardMaterial({ color: "#b17c48", roughness: 0.8, metalness: 0.1 }),
+        );
+        canopy.position.set(building.x, building.h + 0.25, building.z);
+        buildingsGroup.add(canopy);
+        [-0.32, 0.32].forEach((offset) => {
+          const column = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.035, 0.045, 0.34, 8),
+            new THREE.MeshStandardMaterial({ color: "#b17c48", roughness: 0.8 }),
+          );
+          column.position.set(building.x + offset * building.w, building.h + 0.13, building.z);
+          buildingsGroup.add(column);
+        });
+      } else {
+        [-0.3, 0.3].forEach((offset) => {
+          const vent = new THREE.Mesh(
+            new THREE.BoxGeometry(0.24, 0.14, 0.24),
+            new THREE.MeshStandardMaterial({ color: "#657486", roughness: 0.72, metalness: 0.35 }),
+          );
+          vent.position.set(building.x + offset * building.w, building.h + 0.17, building.z);
+          buildingsGroup.add(vent);
+        });
+      }
     });
     scene.add(buildingsGroup);
     buildingMeshesRef.current = buildingMeshes;
@@ -458,6 +553,7 @@ export function Urbanova3D() {
       sunRef.current = null;
       hemisphereRef.current = null;
       nightLightsRef.current = null;
+      windowMaterialRef.current = null;
     };
   }, []);
 
@@ -496,6 +592,9 @@ export function Urbanova3D() {
     sun.intensity = nightMode ? 0.42 : 3.8;
     hemisphere.intensity = nightMode ? 0.85 : 2.6;
     nightLights.visible = nightMode;
+    if (windowMaterialRef.current) {
+      windowMaterialRef.current.emissiveIntensity = nightMode ? 1.15 : 0.1;
+    }
     buildingMeshesRef.current.forEach((mesh) => {
       const selected = mesh.userData.district === selectedCode;
       mesh.material.emissive.set(nightMode ? "#b36a2e" : selected ? "#f4b94e" : "#000000");
