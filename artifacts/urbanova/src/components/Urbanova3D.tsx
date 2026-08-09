@@ -77,6 +77,16 @@ const districts: District[] = [
     detail:
       "Past experiments remain visible. A city should remember what it learned, not just what it launched.",
   },
+  {
+    name: "Transit Hub",
+    code: "TH-05",
+    subtitle: "Connection",
+    color: "#5b9fd6",
+    accent: "#2d5f8a",
+    stat: "9 routes live",
+    detail:
+      "Where every district meets. Mobility flows converge here, linking signal, structure, community, and memory into one moving network.",
+  },
 ];
 
 const buildings = [
@@ -87,6 +97,8 @@ const buildings = [
   { x: 3.4, z: 0.2, w: 2.1, d: 2.3, h: 4.4, tone: "#8a662d", name: "Signal Arcade", district: "SQ-01", roof: "arcade" },
   { x: 5.9, z: -2.4, w: 2.8, d: 2.2, h: 2.9, tone: "#315b62", name: "Workshop Court", district: "WR-02", roof: "low" },
   { x: 7.5, z: 1.8, w: 2.1, d: 2.4, h: 5.2, tone: "#514766", name: "Archive House", district: "AH-04", roof: "archive" },
+  { x: -9.5, z: 0.4, w: 2.4, d: 2.6, h: 3.8, tone: "#2a4a6b", name: "Transit Gateway", district: "TH-05", roof: "tower" },
+  { x: 9.8, z: -2.8, w: 2.2, d: 2.0, h: 4.7, tone: "#355d7a", name: "Junction Pavilion", district: "TH-05", roof: "exchange" },
 ] as const;
 
 type BuildingMesh = THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial> & {
@@ -186,8 +198,12 @@ export function Urbanova3D() {
   const hemisphereRef = useRef<THREE.HemisphereLight | null>(null);
   const nightLightsRef = useRef<THREE.Group | null>(null);
   const windowMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const landmarkRef = useRef<THREE.Group | null>(null);
+  const particlesRef = useRef<THREE.Points | null>(null);
+  const hoveredRef = useRef<BuildingMesh | null>(null);
   const layerGroupsRef = useRef<(Record<Layer, THREE.Group> & { park: THREE.Group }) | null>(null);
   const [selectedCode, setSelectedCode] = useState("SQ-01");
+  const [hoveredName, setHoveredName] = useState<string | null>(null);
   const [selectedLandmark, setSelectedLandmark] = useState("district");
   const [activeLayer, setActiveLayer] = useState<Layer>("district");
   const [nightMode, setNightMode] = useState(false);
@@ -280,8 +296,9 @@ export function Urbanova3D() {
       createSkylineBuilding(scene, x, z, width, depth, height, color);
     });
 
+    const waterGeometry = new THREE.PlaneGeometry(8, 25, 8, 24);
     const water = new THREE.Mesh(
-      new THREE.PlaneGeometry(8, 25),
+      waterGeometry,
       new THREE.MeshStandardMaterial({ color: "#205c6c", transparent: true, opacity: 0.82, roughness: 0.35 }),
     );
     water.rotation.x = -Math.PI / 2;
@@ -437,6 +454,7 @@ export function Urbanova3D() {
       body: new THREE.MeshStandardMaterial({ color: "#f4b94e", roughness: 0.5, metalness: 0.15 }),
       glass: new THREE.MeshStandardMaterial({ color: "#172b42", roughness: 0.2, metalness: 0.35 }),
       light: new THREE.MeshBasicMaterial({ color: "#fff1b8" }),
+      bodyAlt: new THREE.MeshStandardMaterial({ color: "#5b9fd6", roughness: 0.5, metalness: 0.15 }),
     };
     const vehicles: THREE.Group[] = [];
     for (let index = 0; index < 3; index += 1) {
@@ -449,6 +467,31 @@ export function Urbanova3D() {
       headlight.position.set(0.37, 0.21, -0.1);
       vehicle.add(body, cabin, headlight);
       vehicle.position.set(-9 + index * 6.2, 0, 3.4 - index * 1.6);
+      mobilityGroup.add(vehicle);
+      vehicles.push(vehicle);
+    }
+    const route2 = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-9.5, 0.13, -4.2),
+        new THREE.Vector3(-4, 0.13, -3.8),
+        new THREE.Vector3(0, 0.13, -4.5),
+        new THREE.Vector3(4.5, 0.13, -3.2),
+        new THREE.Vector3(9.8, 0.13, -2.8),
+      ]),
+      new THREE.LineDashedMaterial({ color: "#9fc8e8", dashSize: 0.42, gapSize: 0.26, linewidth: 2 }),
+    );
+    route2.computeLineDistances();
+    mobilityGroup.add(route2);
+    for (let index = 0; index < 3; index += 1) {
+      const vehicle = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.18, 0.34), vehicleMaterials.bodyAlt);
+      body.position.y = 0.18;
+      const cabin = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.14, 0.27), vehicleMaterials.glass);
+      cabin.position.set(-0.04, 0.33, 0);
+      const headlight = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.05, 0.08), vehicleMaterials.light);
+      headlight.position.set(0.37, 0.21, -0.1);
+      vehicle.add(body, cabin, headlight);
+      vehicle.position.set(-9.5 + index * 6.4, 0, -4.2);
       mobilityGroup.add(vehicle);
       vehicles.push(vehicle);
     }
@@ -533,6 +576,8 @@ export function Urbanova3D() {
       [7.1, -1.8],
       [-1.7, 2.5],
       [4.8, 1.7],
+      [-9.5, 2.2],
+      [9.8, -4.2],
     ].forEach(([x, z]) => {
       const pole = new THREE.Mesh(
         new THREE.CylinderGeometry(0.025, 0.035, 0.85, 8),
@@ -572,6 +617,50 @@ export function Urbanova3D() {
       signalNodes.push(node);
     });
     scene.add(signalGroup);
+
+    const landmark = new THREE.Group();
+    const landmarkBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.7, 0.85, 0.25, 16),
+      new THREE.MeshStandardMaterial({ color: "#1a2438", roughness: 0.6, metalness: 0.2 }),
+    );
+    landmarkBase.position.set(0, 0.16, -4.5);
+    landmark.add(landmarkBase);
+    const landmarkRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.5, 0.04, 12, 32),
+      new THREE.MeshStandardMaterial({ color: "#f4b94e", roughness: 0.3, metalness: 0.6, emissive: "#f4b94e", emissiveIntensity: 0.4 }),
+    );
+    landmarkRing.position.set(0, 0.32, -4.5);
+    landmarkRing.rotation.x = Math.PI / 2;
+    landmark.add(landmarkRing);
+    const obelisk = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.55, 0),
+      new THREE.MeshStandardMaterial({ color: "#4bb5a9", roughness: 0.15, metalness: 0.7, emissive: "#4bb5a9", emissiveIntensity: 0.3, flatShading: true }),
+    );
+    obelisk.position.set(0, 1.2, -4.5);
+    landmark.add(obelisk);
+    const landmarkGlow = new THREE.PointLight("#78e3d3", 0.8, 4);
+    landmarkGlow.position.set(0, 1.2, -4.5);
+    landmark.add(landmarkGlow);
+    scene.add(landmark);
+    landmarkRef.current = landmark;
+
+    const particleCount = 180;
+    const particleGeometry = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleSpeeds = new Float32Array(particleCount);
+    for (let i = 0; i < particleCount; i += 1) {
+      particlePositions[i * 3] = (Math.random() - 0.5) * 24;
+      particlePositions[i * 3 + 1] = Math.random() * 8 + 0.5;
+      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      particleSpeeds[i] = 0.003 + Math.random() * 0.008;
+    }
+    particleGeometry.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
+    const particles = new THREE.Points(
+      particleGeometry,
+      new THREE.PointsMaterial({ color: "#f4b94e", size: 0.06, transparent: true, opacity: 0.55, sizeAttenuation: true }),
+    );
+    scene.add(particles);
+    particlesRef.current = particles;
 
     const greenGroup = new THREE.Group();
     [
@@ -619,21 +708,77 @@ export function Urbanova3D() {
         setSelectedLandmark(hit.userData.landmark ? "park" : "district");
       }
     };
+    const onPointerMove = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObjects(buildingMeshesRef.current, false)[0]?.object as BuildingMesh | undefined;
+      if (hit !== hoveredRef.current) {
+        if (hoveredRef.current && hoveredRef.current.userData.district !== selectedCode) {
+          hoveredRef.current.material.emissive.set("#000000");
+          hoveredRef.current.material.emissiveIntensity = 0;
+        }
+        hoveredRef.current = hit ?? null;
+        setHoveredName(hit?.userData.buildingName ?? null);
+      }
+    };
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointermove", onPointerMove);
 
     let frame = 0;
     let lastCompassUpdate = 0;
     const animate = (time = 0) => {
       frame = requestAnimationFrame(animate);
       controls.update();
-      water.rotation.z = Math.sin(time * 0.00035) * 0.006;
+      const waterMesh = waterRef.current;
+      if (waterMesh) {
+        const positions = (waterMesh.geometry as THREE.PlaneGeometry).attributes.position as THREE.BufferAttribute;
+        for (let i = 0; i < positions.count; i += 1) {
+          const x = positions.getX(i);
+          const y = positions.getY(i);
+          positions.setZ(i, Math.sin(x * 0.4 + time * 0.001) * 0.18 + Math.cos(y * 0.3 + time * 0.0008) * 0.12);
+        }
+        positions.needsUpdate = true;
+      }
+      const landmarkGroup = landmarkRef.current;
+      if (landmarkGroup) {
+        landmarkGroup.rotation.y = time * 0.0004;
+        const obeliskMesh = landmarkGroup.children[2] as THREE.Mesh | undefined;
+        if (obeliskMesh) obeliskMesh.position.y = 1.2 + Math.sin(time * 0.0012) * 0.18;
+      }
+      const particlePoints = particlesRef.current;
+      if (particlePoints) {
+        const pp = (particlePoints.geometry as THREE.BufferGeometry).attributes.position as THREE.BufferAttribute;
+        for (let i = 0; i < pp.count; i += 1) {
+          let y = pp.getY(i) + particleSpeeds[i];
+          if (y > 9) y = 0.5;
+          pp.setY(i, y);
+        }
+        pp.needsUpdate = true;
+      }
       vehicles.forEach((vehicle, index) => {
         const progress = (time * 0.000035 + index * 0.31) % 1;
-        vehicle.position.x = -9 + progress * 18.5;
-        vehicle.position.z = 3.4 - progress * 4.9 + Math.sin(progress * Math.PI) * 0.5;
-        vehicle.rotation.y = -0.25;
+        if (index < 3) {
+          vehicle.position.x = -9 + progress * 18.5;
+          vehicle.position.z = 3.4 - progress * 4.9 + Math.sin(progress * Math.PI) * 0.5;
+          vehicle.rotation.y = -0.25;
+        } else {
+          const idx = index - 3;
+          const p2 = (time * 0.00004 + idx * 0.27) % 1;
+          vehicle.position.x = -9.5 + p2 * 19.3;
+          vehicle.position.z = -4.2 + p2 * 1.4 + Math.sin(p2 * Math.PI) * 0.3;
+          vehicle.rotation.y = -0.08;
+        }
       });
+      if (windowMaterialRef.current && nightMode) {
+        windowMaterialRef.current.emissiveIntensity = 1.15 + Math.sin(time * 0.003) * 0.25;
+      }
+      if (hoveredRef.current) {
+        hoveredRef.current.material.emissive.set("#4bb5a9");
+        hoveredRef.current.material.emissiveIntensity = 0.35 + Math.sin(time * 0.005) * 0.15;
+      }
       signalNodes.forEach((node, index) => {
         const pulse = (Math.sin(time * 0.0015 + index * 1.7) + 1) / 2;
         const scale = 0.86 + pulse * 0.48;
@@ -713,6 +858,7 @@ export function Urbanova3D() {
           else material.dispose();
         }
       });
+      canvas.removeEventListener("pointermove", onPointerMove);
       buildingMeshesRef.current = [];
       interactiveMeshesRef.current = [];
       vehiclesRef.current = [];
@@ -721,6 +867,9 @@ export function Urbanova3D() {
       hemisphereRef.current = null;
       nightLightsRef.current = null;
       windowMaterialRef.current = null;
+      landmarkRef.current = null;
+      particlesRef.current = null;
+      hoveredRef.current = null;
     };
   }, []);
 
@@ -822,7 +971,7 @@ export function Urbanova3D() {
           </div>
           <div>
             <p className="brand-wordmark font-['Space_Grotesk'] text-[16px] font-bold tracking-[.22em]">URBANOVA</p>
-            <p className="font-mono text-[9px] uppercase tracking-[.18em] text-[#8891a7]">Living city / 04 districts</p>
+            <p className="font-mono text-[9px] uppercase tracking-[.18em] text-[#8891a7]">Living city / 05 districts</p>
           </div>
         </a>
         <nav className="hidden items-center gap-7 font-mono text-[10px] uppercase tracking-[.18em] text-[#8891a7] md:flex">
@@ -880,6 +1029,9 @@ export function Urbanova3D() {
         <div className={`relative min-h-[520px] overflow-hidden border border-[#2b344b] bg-[#11172a] shadow-[0_25px_70px_rgba(0,0,0,.32)] transition-all duration-700 md:min-h-[660px] ${focusMode ? "lg:scale-[1.02]" : ""}`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,#263044_0%,#131b30_48%,#0d1221_100%)]" />
           <canvas ref={canvasRef} className="absolute inset-0 size-full cursor-grab active:cursor-grabbing" aria-label="Interactive 3D city model" />
+          {hoveredName && <div className="pointer-events-none absolute z-30 border border-[#4bb5a9]/40 bg-[#11182b]/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[.12em] text-[#4bb5a9] backdrop-blur-md" style={{ left: "50%", top: "50%", transform: "translate(-50%, -50%)" }}>
+            <MapPin size={11} className="mr-1 inline" />{hoveredName}
+          </div>}
           <div className="pointer-events-none absolute left-[8%] top-[8%] z-10 font-mono text-[9px] uppercase tracking-[.17em] text-[#8891a7]">URBANOVA / live city model</div>
           <div className="pointer-events-none absolute right-5 top-5 z-20 flex items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 backdrop-blur-md">
             <span className={`h-1.5 w-1.5 ${webglReady ? "animate-pulse bg-[#4bb5a9]" : "bg-[#e4786d]"}`} />
@@ -920,12 +1072,13 @@ export function Urbanova3D() {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.16em] text-[#8891a7]"><Waves size={14} /> City health <strong className="font-semibold text-[#4bb5a9]">86.4</strong></span>
+          <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.16em] text-[#8891a7]"><Waves size={14} /> City health <strong className="font-semibold text-[#4bb5a9]">91.2</strong></span>
           <span className="h-4 w-px bg-[#2b344b]" />
           <div className="hidden items-center gap-3 font-mono text-[9px] uppercase tracking-[.12em] text-[#8891a7] sm:flex" aria-label="Map legend">
             <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#2f7b67]" /> Park</span>
             <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#f4b94e]" /> Signals</span>
             <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#4bb5a9]" /> Mobility</span>
+            <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#5b9fd6]" /> Transit</span>
           </div>
           <button type="button" onClick={() => setNightMode((current) => !current)} className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.16em] text-[#8891a7] hover:text-[#f4b94e]"><Layers3 size={14} /> {nightMode ? "Daylight" : "Night view"} <ChevronDown size={12} /></button>
         </div>
