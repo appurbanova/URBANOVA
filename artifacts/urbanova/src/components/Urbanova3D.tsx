@@ -5,11 +5,15 @@ import {
   ArrowUpRight,
   ArrowLeft,
   Building2,
+  Camera,
   ChevronDown,
+  Compass,
   Layers3,
   MapPin,
   Menu,
   Minus,
+  Pause,
+  Play,
   Plus,
   Radio,
   RotateCcw,
@@ -190,6 +194,10 @@ export function Urbanova3D() {
   const [focusMode, setFocusMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [webglReady, setWebglReady] = useState(true);
+  const [autoOrbit, setAutoOrbit] = useState(false);
+  const [compassHeading, setCompassHeading] = useState(0);
+  const autoOrbitRef = useRef(false);
+  const flyTargetRef = useRef<{ x: number; y: number; z: number; tx: number; ty: number; tz: number } | null>(null);
   const selectedDistrict = useMemo(
     () => districts.find((district) => district.code === selectedCode) ?? districts[0],
     [selectedCode],
@@ -615,6 +623,7 @@ export function Urbanova3D() {
     canvas.addEventListener("pointerup", onPointerUp);
 
     let frame = 0;
+    let lastCompassUpdate = 0;
     const animate = (time = 0) => {
       frame = requestAnimationFrame(animate);
       controls.update();
@@ -631,15 +640,69 @@ export function Urbanova3D() {
         node.scale.setScalar(scale);
         (node.material as THREE.MeshBasicMaterial).opacity = 0.22 + pulse * 0.62;
       });
+      if (autoOrbitRef.current && !flyTargetRef.current) {
+        const angle = 0.0016;
+        const offset = camera.position.clone().sub(controls.target);
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        camera.position.set(
+          controls.target.x + offset.x * cos - offset.z * sin,
+          offset.y + controls.target.y,
+          controls.target.z + offset.x * sin + offset.z * cos,
+        );
+      }
+      const fly = flyTargetRef.current;
+      if (fly) {
+        camera.position.lerp(new THREE.Vector3(fly.x, fly.y, fly.z), 0.06);
+        controls.target.lerp(new THREE.Vector3(fly.tx, fly.ty, fly.tz), 0.06);
+        if (camera.position.distanceTo(new THREE.Vector3(fly.x, fly.y, fly.z)) < 0.3) flyTargetRef.current = null;
+      }
+      if (time - lastCompassUpdate > 80) {
+        const dir = new THREE.Vector3().subVectors(controls.target, camera.position).setY(0).normalize();
+        const heading = Math.atan2(dir.x, dir.z) * (180 / Math.PI);
+        setCompassHeading(Math.round(((heading + 360) % 360) * 10) / 10);
+        lastCompassUpdate = time;
+      }
       renderer.render(scene, camera);
     };
     animate();
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLInputElement) return;
+      const controls = controlsRef.current;
+      const camera = cameraRef.current;
+      if (!controls || !camera) return;
+      switch (event.key) {
+        case ' ': { event.preventDefault(); const next = !autoOrbitRef.current; autoOrbitRef.current = next; setAutoOrbit(next); break; }
+        case 'r': case 'R': { resetView(); break; }
+        case 'n': case 'N': { setNightMode((v) => !v); break; }
+        case 'f': case 'F': { if (!focusMode) flyToDistrict(selectedCode); setFocusMode(!focusMode); break; }
+        case '=': case '+': { zoom(0.82); break; }
+        case '-': case '_': { zoom(1.18); break; }
+        case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown': {
+          event.preventDefault();
+          const offset = camera.position.clone().sub(controls.target);
+          const spherical = new THREE.Spherical().setFromVector3(offset);
+          if (event.key === 'ArrowLeft') spherical.theta += 0.1;
+          if (event.key === 'ArrowRight') spherical.theta -= 0.1;
+          if (event.key === 'ArrowUp') spherical.phi = Math.max(controls.minPolarAngle + 0.02, spherical.phi - 0.1);
+          if (event.key === 'ArrowDown') spherical.phi = Math.min(controls.maxPolarAngle - 0.02, spherical.phi + 0.1);
+          offset.setFromSpherical(spherical);
+          camera.position.copy(controls.target.clone().add(offset));
+          controls.update();
+          break;
+        }
+        default: break;
+      }
+    };
+    window.addEventListener('keydown', onKey);
 
     return () => {
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener('keydown', onKey);
       controls.dispose();
       renderer.dispose();
       scene.traverse((object) => {
@@ -720,9 +783,33 @@ export function Urbanova3D() {
     const controls = controlsRef.current;
     const camera = cameraRef.current;
     if (!controls || !camera) return;
-    camera.position.set(13, 13, 16);
-    controls.target.set(0, 1.2, 0);
-    controls.update();
+    flyTargetRef.current = { x: 13, y: 13, z: 16, tx: 0, ty: 1.2, tz: 0 };
+    autoOrbitRef.current = false;
+    setAutoOrbit(false);
+  };
+
+  const flyToDistrict = (code: string) => {
+    const targetBuilding = buildings.find((b) => b.district === code);
+    if (!targetBuilding) return;
+    const angle = Math.atan2(targetBuilding.x, targetBuilding.z) + 0.6;
+    const dist = 7.5;
+    flyTargetRef.current = {
+      x: targetBuilding.x + Math.sin(angle) * dist,
+      y: targetBuilding.h + 4.5,
+      z: targetBuilding.z + Math.cos(angle) * dist,
+      tx: targetBuilding.x,
+      ty: targetBuilding.h / 2 + 1,
+      tz: targetBuilding.z,
+    };
+  };
+
+  const screenshot = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = `urbanova-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   };
 
   return (
@@ -783,7 +870,7 @@ export function Urbanova3D() {
             <p className="mt-4 max-w-[320px] text-[13px] leading-6 text-[#8891a7]">{selectedLandmark === "park" ? "A shaded civic park where public activity slows down: four tree groves, a reflective fountain, and room for neighbors to meet." : selectedDistrict.detail}</p>
             <div className="mt-5 flex items-end justify-between">
               <div><span className="block font-['Space_Grotesk'] text-2xl text-[#f2eee4]">{selectedDistrict.stat.split(" ")[0]}</span><span className="font-mono text-[9px] uppercase tracking-[.15em] text-[#8891a7]">{selectedDistrict.stat.substring(selectedDistrict.stat.indexOf(" ") + 1)}</span></div>
-              <button type="button" onClick={() => setFocusMode(!focusMode)} className="group flex items-center gap-2 bg-[#f4b94e] px-4 py-2.5 font-mono text-[9px] uppercase tracking-[.13em] text-[#101526] transition hover:bg-[#ffd06f]">
+            <button type="button" onClick={() => { if (!focusMode) flyToDistrict(selectedCode); setFocusMode(!focusMode); }} className="group flex items-center gap-2 bg-[#f4b94e] px-4 py-2.5 font-mono text-[9px] uppercase tracking-[.13em] text-[#101526] transition hover:bg-[#ffd06f]">
                 {focusMode ? "Exit focus" : "Enter district"} <ArrowUpRight size={13} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
             </div>
@@ -802,13 +889,22 @@ export function Urbanova3D() {
             <span className={`h-1.5 w-1.5 rounded-full ${nightMode ? "bg-[#f4b94e]" : "bg-[#4bb5a9]"}`} />
             {nightMode ? "Night city" : "Day city"}
           </button>
+          <button type="button" onClick={() => { const next = !autoOrbit; autoOrbitRef.current = next; setAutoOrbit(next); }} className={`absolute left-5 top-[64px] z-20 flex items-center gap-2 border px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] backdrop-blur-md transition ${autoOrbit ? "border-[#4bb5a9] bg-[#4bb5a9]/15 text-[#4bb5a9]" : "border-[#2b344b] bg-[#11182b]/80 text-[#c0c4cf] hover:border-[#f4b94e] hover:text-[#f4b94e]"}`} aria-pressed={autoOrbit}>
+            {autoOrbit ? <Pause size={13} /> : <Play size={13} />}
+            {autoOrbit ? "Orbit on" : "Auto-orbit"}
+          </button>
+          <div className="absolute right-5 top-[64px] z-20 flex flex-col items-center gap-1 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2.5 backdrop-blur-md">
+            <Compass size={22} className="text-[#f4b94e] transition-transform duration-200" style={{ transform: `rotate(${compassHeading}deg)` }} />
+            <span className="font-mono text-[8px] uppercase tracking-[.1em] text-[#8891a7]">{Math.round(compassHeading)}&deg;</span>
+          </div>
           {!webglReady && <div className="absolute inset-0 z-10 grid place-items-center bg-[#0f1324]/85 p-8 text-center"><div><p className="font-['Space_Grotesk'] text-xl font-medium text-[#f2eee4]">This city needs a WebGL-capable browser.</p><p className="mt-2 max-w-sm text-sm text-[#9aa1b3]">Try the latest Chrome, Safari, or Firefox to explore the model.</p></div></div>}
           <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2">
             <button type="button" onClick={() => zoom(0.82)} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Zoom in"><Plus size={15} /></button>
             <button type="button" onClick={() => zoom(1.18)} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Zoom out"><Minus size={15} /></button>
             <button type="button" onClick={resetView} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Reset view"><RotateCcw size={15} /></button>
+            <button type="button" onClick={screenshot} className="border border-[#2b344b] bg-[#11182b]/80 p-2.5 text-[#c0c4cf] backdrop-blur-md hover:border-[#f4b94e] hover:text-[#f4b94e]" aria-label="Screenshot"><Camera size={15} /></button>
           </div>
-          <div className="absolute bottom-5 right-5 z-20 hidden items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#9aa1b3] backdrop-blur-md sm:flex"><MapPin size={13} /> Drag to orbit · tap a building or park</div>
+          <div className="absolute bottom-5 right-5 z-20 hidden items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-[#9aa1b3] backdrop-blur-md sm:flex"><MapPin size={13} /> Drag · tap · <kbd className="border border-[#3a4660] px-1 text-[8px]">Space</kbd> orbit · <kbd className="border border-[#3a4660] px-1 text-[8px]">R</kbd> reset · <kbd className="border border-[#3a4660] px-1 text-[8px]">N</kbd> night</div>
         </div>
       </section>
 
