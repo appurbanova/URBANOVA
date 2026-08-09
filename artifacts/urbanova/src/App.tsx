@@ -237,7 +237,7 @@ function StoreBadge({ store }: { store: 'apple' | 'google' }) {
   const Icon = apple ? SiApple : SiGoogleplay;
   return (
     <div
-      className="group flex min-w-[158px] items-center gap-3 border border-border/90 bg-[#0d1020]/80 px-3.5 py-2.5 opacity-90 shadow-[0_8px_24px_rgba(0,0,0,.16)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/60 hover:bg-[#12172a]"
+      className="group flex min-w-0 items-center gap-2.5 border border-border/90 bg-[#0d1020]/80 px-3 py-2.5 opacity-90 shadow-[0_8px_24px_rgba(0,0,0,.16)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/60 hover:bg-[#12172a] sm:gap-3 sm:px-3.5"
       aria-label={`${apple ? 'App Store' : 'Google Play'} download coming soon`}
     >
       <Icon className="size-6 shrink-0 text-foreground transition-colors duration-300 group-hover:text-primary" aria-hidden="true" />
@@ -580,8 +580,8 @@ function Home() {
           <div className="mt-4"><HeroWords /></div>
           <p className="hero-word mt-7 max-w-md text-base leading-7 text-muted-foreground sm:text-lg" style={{ animationDelay: '600ms' }}>URBANOVA turns the things you build in public into a <RotatingWord words={['living, explorable world.', 'map you can walk.', 'system you can read.', 'place you can return to.']} /> See the signal. Find the shape. Keep moving.</p>
           <div className="hero-word mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '750ms' }}><MagneticButton href="/demo" testId="link-hero-demo">Explore a sample city <ArrowUpRight size={15} /></MagneticButton><MagneticButton href="/how-to" testId="link-hero-how-to" variant="ghost">Read the field guide <ChevronRight size={15} /></MagneticButton></div>
-          <div className="hero-word mt-7 flex flex-wrap items-center gap-2.5" style={{ animationDelay: '850ms' }} aria-label="Mobile apps coming soon"><StoreBadge store="apple" /><StoreBadge store="google" /></div>
-          <div className="hero-word mt-10 flex items-center gap-4 border-t border-border/70 pt-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground" style={{ animationDelay: '950ms' }}><span className="text-foreground">01</span><span className="h-px w-12 bg-border" />A map, not a feed</div>
+          <div className="hero-word !mt-7 !grid w-full max-w-[340px] grid-cols-2 items-stretch gap-2.5" style={{ animationDelay: '850ms' }} aria-label="Mobile apps coming soon"><StoreBadge store="apple" /><StoreBadge store="google" /></div>
+          <div className="hero-word !mt-10 flex items-center gap-4 border-t border-border/70 pt-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground" style={{ animationDelay: '950ms' }}><span className="text-foreground">01</span><span className="h-px w-12 bg-border" />A map, not a feed</div>
         </div>
         <CityTilt />
       </div>
