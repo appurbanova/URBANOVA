@@ -10,6 +10,7 @@ import { SiApple, SiDiscord, SiGoogleplay, SiTelegram, SiX } from 'react-icons/s
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import NotFound from '@/pages/not-found';
+import MiniGames from '@/pages/mini-games';
 import { Urbanova3D } from '@/components/Urbanova3D';
 import { UrbanovaCityPreview } from '@/components/UrbanovaCityPreview';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
@@ -60,11 +61,11 @@ function Logo({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function SiteHeader() {
+export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
-  const links = [['/demo', 'Demo'], ['/about', 'About'], ['/how-to', 'How it works'], ['/roadmap', 'Roadmap'], ['/community', 'Community']];
+  const links = [['/demo', 'Demo'], ['/mini-games', 'Mini Games'], ['/about', 'About'], ['/how-to', 'How it works'], ['/roadmap', 'Roadmap'], ['/community', 'Community']];
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
@@ -94,7 +95,7 @@ function SiteHeader() {
   );
 }
 
-function Footer() {
+export function Footer() {
   return <footer className="border-t border-border/60 bg-[#0b1020]">
     <div className="mx-auto flex max-w-7xl flex-col gap-7 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
       <div><Logo /><p className="mt-4 max-w-xs font-mono text-[10px] leading-5 tracking-[.08em] text-muted-foreground">A living map for the work you put into the world.</p></div>
@@ -230,7 +231,7 @@ function CityMap({ active = [], onSelect, compact = false }: { active?: District
   </div>;
 }
 
-function SectionLabel({ children }: { children: ReactNode }) { return <div className="mb-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.22em] text-primary"><span className="h-px w-8 bg-primary" />{children}</div>; }
+export function SectionLabel({ children }: { children: ReactNode }) { return <div className="mb-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.22em] text-primary"><span className="h-px w-8 bg-primary" />{children}</div>; }
 
 function StoreBadge({ store }: { store: 'apple' | 'google' }) {
   const apple = store === 'apple';
@@ -869,7 +870,7 @@ function Terms() {
 }
 
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route path="/community" component={CommunityPage} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/mini-games" component={MiniGames} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route path="/community" component={CommunityPage} /><Route component={NotFound} /></Switch>;
 }
 
 function App() {
