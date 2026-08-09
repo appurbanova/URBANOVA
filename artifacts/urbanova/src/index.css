@@ -265,3 +265,162 @@
   .hero-spotlight { display: none; }
   .district-card-3d { transform: none !important; }
 }
+
+/* --- Spectacular front-page upgrades --- */
+
+/* Staggered hero word reveal */
+@keyframes hero-word-rise {
+  0% { opacity: 0; transform: translateY(40px) rotate(-2deg); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0) rotate(0); filter: blur(0); }
+}
+.hero-word { display: inline-block; opacity: 0; animation: hero-word-rise .7s cubic-bezier(.22,1,.36,1) both; }
+
+/* Aurora gradient mesh */
+@keyframes aurora-shift {
+  0%, 100% { transform: translate(-10%, -5%) rotate(0deg) scale(1.1); }
+  33% { transform: translate(8%, 6%) rotate(120deg) scale(1.25); }
+  66% { transform: translate(-5%, 10%) rotate(240deg) scale(.95); }
+}
+.aurora-mesh {
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  filter: blur(80px);
+  opacity: .35;
+  z-index: 0;
+}
+.aurora-mesh::before, .aurora-mesh::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+.aurora-mesh::before {
+  width: 50%; height: 50%; top: 10%; left: 15%;
+  background: radial-gradient(circle, rgba(244,185,78,.45), transparent 65%);
+  animation: aurora-shift 22s ease-in-out infinite;
+}
+.aurora-mesh::after {
+  width: 45%; height: 45%; bottom: 5%; right: 10%;
+  background: radial-gradient(circle, rgba(75,181,169,.4), transparent 65%);
+  animation: aurora-shift 28s ease-in-out infinite reverse;
+}
+.aurora-mesh-3 {
+  position: absolute;
+  width: 40%; height: 40%; top: 40%; left: 45%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(155,138,214,.3), transparent 65%);
+  filter: blur(80px);
+  animation: aurora-shift 25s ease-in-out infinite;
+  animation-delay: -8s;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Mouse-reactive city canvas tilt */
+.city-tilt-wrap {
+  transition: transform .15s ease-out;
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+.city-tilt-inner {
+  transform-style: preserve-3d;
+  transition: transform .15s ease-out;
+  will-change: transform;
+}
+
+/* Floating stat badges */
+@keyframes badge-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.stat-badge {
+  animation: badge-float 4s ease-in-out infinite;
+  will-change: transform;
+}
+.stat-badge-delay { animation-delay: 1.5s; }
+
+/* Shine sweep on district cards */
+@keyframes shine-sweep {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(250%) skewX(-20deg); }
+}
+.shine-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(234,230,213,.12), transparent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+.district-card-3d:hover .shine-overlay {
+  opacity: 1;
+  animation: shine-sweep .9s ease-out;
+}
+
+/* Dramatic glow ring on hover */
+.district-card-3d::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity .4s ease;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px var(--card-glow, rgba(244,185,78,.4)), 0 20px 60px -10px var(--card-glow-shadow, rgba(244,185,78,.15));
+}
+.district-card-3d:hover::after { opacity: 1; }
+
+/* Constellation connection lines */
+@keyframes constellation-pulse {
+  0%, 100% { stroke-opacity: .15; }
+  50% { stroke-opacity: .5; }
+}
+.constellation-line {
+  stroke-dasharray: 4 4;
+  animation: constellation-pulse 3s ease-in-out infinite;
+}
+
+/* Section divider reveal */
+@keyframes divider-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.divider-grow {
+  transform-origin: left;
+  animation: divider-grow 1s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* Glow text for CTA */
+@keyframes cta-glow {
+  0%, 100% { text-shadow: 0 0 20px rgba(244,185,78,.3); }
+  50% { text-shadow: 0 0 40px rgba(244,185,78,.5), 0 0 60px rgba(75,181,169,.2); }
+}
+.cta-glow { animation: cta-glow 3s ease-in-out infinite; }
+
+/* Scroll indicator */
+@keyframes scroll-hint {
+  0% { transform: translateY(0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(16px); opacity: 0; }
+}
+.scroll-hint-dot { animation: scroll-hint 2s ease-in-out infinite; }
+
+/* Marquee pause on hover */
+.ticker-mask:hover .ticker-track { animation-play-state: paused; }
+
+/* Feature icon glow */
+@keyframes icon-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(75,181,169,0); }
+  50% { box-shadow: 0 0 24px 4px rgba(75,181,169,.15); }
+}
+.feature-icon-glow { animation: icon-glow 4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-word, .aurora-mesh, .aurora-mesh::before, .aurora-mesh::after, .aurora-mesh-3,
+  .stat-badge, .shine-overlay, .constellation-line, .divider-grow,
+  .cta-glow, .scroll-hint-dot, .feature-icon-glow { animation: none !important; }
+  .hero-word { opacity: 1 !important; }
+  .city-tilt-wrap, .city-tilt-inner { transform: none !important; }
+}

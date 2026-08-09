@@ -446,18 +446,109 @@ function DistrictCard3D({ districtKey, index, selected, onSelect }: { districtKe
         <div className="mt-6 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.15em] text-primary">Inspect district <ArrowUpRight size={13} className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" /></div>
       </div>
       <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ background: `radial-gradient(circle at 50% 0%, ${data.color}18, transparent 70%)` }} />
+      <div className="shine-overlay" />
     </Link>
+  );
+}
+
+function HeroWords() {
+  const words = ['Your', 'work', 'is', 'already', 'a'];
+  return (
+    <h1 className="font-display max-w-xl text-[clamp(3.2rem,8vw,7rem)] font-bold leading-[.9] tracking-[-.07em] text-balance">
+      {words.map((w, i) => <span key={i} className="hero-word" style={{ animationDelay: `${i * 90}ms` }}>{w} </span>)}
+      <span className="hero-word shimmer-text" style={{ animationDelay: `${words.length * 90}ms` }}>city.</span>
+    </h1>
+  );
+}
+
+function CityTilt() {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [healthVisible, setHealthVisible] = useState(false);
+  const healthRef = useRef<HTMLDivElement>(null);
+  const healthValue = useCountUp(86.4, 1800, healthVisible);
+  useEffect(() => {
+    const el = healthRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) { setHealthVisible(true); obs.disconnect(); }
+    }, { threshold: 0.5 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const wrap = wrapRef.current;
+    const inner = innerRef.current;
+    if (!wrap || !inner) return;
+    const rect = wrap.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    wrap.style.transform = `perspective(1200px) rotateX(${(-py * 6).toFixed(2)}deg) rotateY(${(px * 8).toFixed(2)}deg)`;
+    inner.style.transform = `translate3d(${(px * 16).toFixed(1)}px, ${(py * 12).toFixed(1)}px, 40px)`;
+  }, []);
+  const onMouseLeave = useCallback(() => {
+    const wrap = wrapRef.current;
+    const inner = innerRef.current;
+    if (wrap) wrap.style.transform = 'perspective(1200px) rotateX(0) rotateY(0)';
+    if (inner) inner.style.transform = 'translate3d(0,0,0)';
+  }, []);
+  return (
+    <div className="city-canvas-shell relative min-h-[430px] animate-rise [animation-delay:120ms] sm:min-h-[470px] md:min-h-[540px]">
+      <div className="absolute -inset-12 bg-[radial-gradient(circle,rgba(244,185,78,.13),transparent_55%)]" />
+      <div ref={wrapRef} className="city-tilt-wrap relative h-full min-h-[430px] sm:min-h-[470px] md:min-h-[540px]" onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
+        <div ref={innerRef} className="city-tilt-inner absolute inset-0">
+          <UrbanovaCityPreview />
+        </div>
+        <div ref={healthRef} className="stat-badge absolute -bottom-3 right-2 z-20 border border-primary/40 bg-[#12172a]/90 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3 animate-glow-pulse">
+          <div className="font-mono text-[8px] uppercase tracking-[.15em] text-primary">City health</div>
+          <div className="mt-1 flex items-end gap-2"><span className="font-display text-2xl font-semibold sm:text-3xl">{healthValue.toFixed(1)}</span><span className="mb-1 font-mono text-[9px] text-muted-foreground sm:text-[10px]">/ 100</span></div>
+        </div>
+        <div className="stat-badge stat-badge-delay absolute -top-2 -left-2 z-20 border border-secondary/40 bg-[#12172a]/90 px-3 py-2.5 backdrop-blur-md sm:px-4">
+          <div className="font-mono text-[8px] uppercase tracking-[.15em] text-secondary">Districts</div>
+          <div className="mt-1 font-display text-2xl font-semibold sm:text-3xl">4<span className="mb-1 ml-1 font-mono text-[9px] text-muted-foreground sm:text-[10px]">live</span></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScrollHint() {
+  return (
+    <div className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 md:flex" aria-hidden="true">
+      <span className="font-mono text-[8px] uppercase tracking-[.2em] text-muted-foreground">Scroll</span>
+      <span className="flex h-8 w-5 justify-center rounded-full border border-border/80 pt-1.5">
+        <span className="scroll-hint-dot h-1.5 w-1.5 rounded-full bg-primary" />
+      </span>
+    </div>
+  );
+}
+
+function ConstellationSVG() {
+  const nodes = [
+    { x: 8, y: 20 }, { x: 25, y: 55 }, { x: 45, y: 30 }, { x: 62, y: 70 },
+    { x: 80, y: 40 }, { x: 92, y: 75 }, { x: 35, y: 85 }, { x: 70, y: 15 },
+  ];
+  const links = [[0,1],[1,2],[2,4],[3,4],[4,5],[1,6],[2,7],[3,6]];
+  return (
+    <svg className="pointer-events-none absolute inset-0 size-full opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      {links.map(([a, b], i) => (
+        <line key={i} x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y}
+          stroke="#f4b94e" strokeWidth=".15" className="constellation-line" style={{ animationDelay: `${i * .3}s` }} />
+      ))}
+      {nodes.map((n, i) => (
+        <circle key={i} cx={n.x} cy={n.y} r=".5" fill="#f4b94e" opacity=".6">
+          <animate attributeName="opacity" values=".3;.8;.3" dur={`${3 + i}s`} repeatCount="indefinite" />
+        </circle>
+      ))}
+    </svg>
   );
 }
 
 function Home() {
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictKey>('signal');
-  const [healthVisible, setHealthVisible] = useState(false);
   const heroSpotRef = useSpotlight();
   const selected = districtData[selectedDistrict];
   const heroGlowRef = useParallax<HTMLDivElement>(-0.12);
-  const cityHealthRef = useRef<HTMLDivElement>(null);
-  const healthValue = useCountUp(86.4, 1800, healthVisible);
   useEffect(() => {
     const reveal = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -468,28 +559,35 @@ function Home() {
       });
     }, { threshold: 0.12 });
     document.querySelectorAll('.home-reveal').forEach((element) => reveal.observe(element));
-    const healthObserver = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting) { setHealthVisible(true); healthObserver.disconnect(); }
-    }, { threshold: 0.5 });
-    if (cityHealthRef.current) healthObserver.observe(cityHealthRef.current);
-    return () => { reveal.disconnect(); healthObserver.disconnect(); };
+    return () => { reveal.disconnect(); };
   }, []);
   return <div className="noise"><ScrollProgress /><SiteHeader /><main>
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 grid-lines opacity-25" />
-      <Particles count={16} />
+      <div className="aurora-mesh" aria-hidden="true" />
+      <div className="aurora-mesh-3" aria-hidden="true" />
+      <Particles count={20} />
+      <ConstellationSVG />
       <div ref={heroSpotRef} className="hero-spotlight" aria-hidden="true" />
       <div ref={heroGlowRef} className="hero-glow animate-gradient-drift -top-20 -left-20 size-[420px] bg-[#f4b94e]/20" />
       <div className="hero-glow animate-gradient-drift [animation-delay:6s] -right-32 top-40 size-[380px] bg-[#4bb5a9]/15" />
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 pb-14 pt-10 sm:gap-10 sm:px-8 sm:pb-16 sm:pt-14 md:grid-cols-[.9fr_1.1fr] md:gap-8 md:pb-24 md:pt-24">
-        <div className="relative z-10 animate-rise"><SectionLabel>Public activity, made legible</SectionLabel><h1 className="font-display max-w-xl text-[clamp(3.2rem,8vw,7rem)] font-bold leading-[.9] tracking-[-.07em] text-balance">Your work is already a <span className="shimmer-text">city.</span></h1><p className="mt-7 max-w-md text-base leading-7 text-muted-foreground sm:text-lg">URBANOVA turns the things you build in public into a <RotatingWord words={['living, explorable world.', 'map you can walk.', 'system you can read.', 'place you can return to.']} /> See the signal. Find the shape. Keep moving.</p><div className="mt-8 flex flex-wrap items-center gap-3"><MagneticButton href="/demo" testId="link-hero-demo">Explore a sample city <ArrowUpRight size={15} /></MagneticButton><MagneticButton href="/how-to" testId="link-hero-how-to" variant="ghost">Read the field guide <ChevronRight size={15} /></MagneticButton></div><div className="mt-7 flex flex-wrap items-center gap-2.5" aria-label="Mobile apps coming soon"><StoreBadge store="apple" /><StoreBadge store="google" /></div><div className="mt-10 flex items-center gap-4 border-t border-border/70 pt-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><span className="text-foreground">01</span><span className="h-px w-12 bg-border" />A map, not a feed</div></div>
-          <div className="city-canvas-shell relative min-h-[430px] animate-rise [animation-delay:120ms] sm:min-h-[470px] md:min-h-[540px]"><div className="absolute -inset-12 bg-[radial-gradient(circle,rgba(244,185,78,.13),transparent_55%)]" /><UrbanovaCityPreview /><div ref={cityHealthRef} className="absolute -bottom-3 right-2 z-20 border border-primary/40 bg-[#12172a]/90 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3 animate-glow-pulse"><div className="font-mono text-[8px] uppercase tracking-[.15em] text-primary">City health</div><div className="mt-1 flex items-end gap-2"><span className="font-display text-2xl font-semibold sm:text-3xl">{healthValue.toFixed(1)}</span><span className="mb-1 font-mono text-[9px] text-muted-foreground sm:text-[10px]">/ 100</span></div></div></div>
+        <div className="relative z-10 animate-rise">
+          <div className="hero-word" style={{ animationDelay: '0ms' }}><SectionLabel>Public activity, made legible</SectionLabel></div>
+          <div className="mt-4"><HeroWords /></div>
+          <p className="hero-word mt-7 max-w-md text-base leading-7 text-muted-foreground sm:text-lg" style={{ animationDelay: '600ms' }}>URBANOVA turns the things you build in public into a <RotatingWord words={['living, explorable world.', 'map you can walk.', 'system you can read.', 'place you can return to.']} /> See the signal. Find the shape. Keep moving.</p>
+          <div className="hero-word mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '750ms' }}><MagneticButton href="/demo" testId="link-hero-demo">Explore a sample city <ArrowUpRight size={15} /></MagneticButton><MagneticButton href="/how-to" testId="link-hero-how-to" variant="ghost">Read the field guide <ChevronRight size={15} /></MagneticButton></div>
+          <div className="hero-word mt-7 flex flex-wrap items-center gap-2.5" style={{ animationDelay: '850ms' }} aria-label="Mobile apps coming soon"><StoreBadge store="apple" /><StoreBadge store="google" /></div>
+          <div className="hero-word mt-10 flex items-center gap-4 border-t border-border/70 pt-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground" style={{ animationDelay: '950ms' }}><span className="text-foreground">01</span><span className="h-px w-12 bg-border" />A map, not a feed</div>
+        </div>
+        <CityTilt />
       </div>
+      <ScrollHint />
     </section>
     <ActivityTicker />
     <section className="home-reveal border-y border-border/60 bg-[#101323]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[.75fr_1.25fr] md:py-20"><div><SectionLabel>Why a city</SectionLabel><h2 className="font-display text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">A better way to read a builder.</h2></div><div className="grid gap-8 sm:grid-cols-3"><Feature icon={<Orbit size={19} />} title="Find the signal" text="A quiet layer over your public work, connecting releases, writing, and conversation." /><Feature icon={<Layers3 size={19} />} title="See the shape" text="Districts reveal patterns that a chronological feed keeps flat and easy to miss." /><Feature icon={<Compass size={19} />} title="Choose your next" text="Use the city as a personal instrument for deciding where to put your attention." /></div></div></section>
     <section className="home-reveal mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-24"><div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] md:items-end"><div><SectionLabel>Made for the open web</SectionLabel><h2 className="font-display max-w-2xl text-4xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">The public internet is a place. <span className="text-muted-foreground">URBANOVA gives it contours.</span></h2></div><div className="border-l border-primary/50 pl-5 text-sm leading-6 text-muted-foreground">No vanity metrics. No productivity theatre. Just a thoughtful surface for the work, people, and ideas you have chosen to make visible.</div></div><div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{(Object.keys(districtData) as DistrictKey[]).map((key, i) => <DistrictCard3D key={key} districtKey={key} index={i} selected={selectedDistrict === key} onSelect={() => setSelectedDistrict(key)} />)}</div><div className="mt-4 flex flex-col gap-4 border border-primary/30 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between" aria-live="polite"><div><div className="font-mono text-[9px] uppercase tracking-[.18em] text-primary">{selected.eyebrow} / selected layer</div><p className="mt-1 font-display text-xl font-semibold">{selected.name}</p><p className="mt-1 text-sm text-muted-foreground">{selected.stat} · {selected.detail}</p></div><Link href="/demo" className="inline-flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">Open the map <ArrowUpRight size={14} /></Link></div></section>
-    <section className="home-reveal border-t border-border/60 bg-primary px-5 py-14 text-primary-foreground sm:px-8 md:py-20"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[.2em] opacity-70">Start with what is already there</div><h2 className="mt-4 max-w-xl font-display text-4xl font-bold leading-none tracking-[-.05em] sm:text-6xl">Give your work a place to live.</h2></div><Link href="/login" data-testid="link-cta-create-city" className="magnetic flex items-center gap-3 border border-primary-foreground/50 px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.15em] transition-colors hover:bg-primary-foreground hover:text-primary">Create your demo city <ArrowUpRight size={15} /></Link></div></section>
+    <section className="home-reveal border-t border-border/60 bg-primary px-5 py-14 text-primary-foreground sm:px-8 md:py-20"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[.2em] opacity-70">Start with what is already there</div><h2 className="cta-glow mt-4 max-w-xl font-display text-4xl font-bold leading-none tracking-[-.05em] sm:text-6xl">Give your work a place to live.</h2></div><Link href="/login" data-testid="link-cta-create-city" className="magnetic flex items-center gap-3 border border-primary-foreground/50 px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.15em] transition-colors hover:bg-primary-foreground hover:text-primary">Create your demo city <ArrowUpRight size={15} /></Link></div></section>
   </main><Footer /></div>;
 }
 
