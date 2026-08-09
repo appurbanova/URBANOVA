@@ -209,8 +209,8 @@ export function Urbanova3D() {
     }
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#11172a");
-    scene.fog = new THREE.Fog("#11172a", 18, 34);
+    scene.background = new THREE.Color("#10172a");
+    scene.fog = new THREE.Fog("#10172a", 18, 34);
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(13, 13, 16);
     cameraRef.current = camera;
@@ -243,7 +243,7 @@ export function Urbanova3D() {
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    const grid = new THREE.GridHelper(28, 28, "#28556a", "#1d3047");
+    const grid = new THREE.GridHelper(28, 28, "#5a7691", "#263b56");
     grid.position.y = 0.04;
     (grid.material as THREE.Material).opacity = 0.42;
     (grid.material as THREE.Material).transparent = true;
@@ -274,7 +274,7 @@ export function Urbanova3D() {
 
     const water = new THREE.Mesh(
       new THREE.PlaneGeometry(8, 25),
-      new THREE.MeshStandardMaterial({ color: "#174b62", transparent: true, opacity: 0.82, roughness: 0.35 }),
+      new THREE.MeshStandardMaterial({ color: "#205c6c", transparent: true, opacity: 0.82, roughness: 0.35 }),
     );
     water.rotation.x = -Math.PI / 2;
     water.position.set(-11.2, 0.06, 0);
@@ -726,15 +726,15 @@ export function Urbanova3D() {
   };
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#0f1324] text-[#f2eee4] selection:bg-[#f4b94e] selection:text-[#101526]">
-      <header className="relative z-30 flex items-center justify-between border-b border-[#2b344b] bg-[#0d1020]/90 px-5 py-4 backdrop-blur-md md:px-9">
+    <main className="min-h-screen overflow-hidden bg-[#0b1020] text-[#eae6d5] selection:bg-[#f4b94e] selection:text-[#0b1020]">
+      <header className="relative z-30 flex items-center justify-between border-b border-[#34415b] bg-[#0b1020]/90 px-5 py-4 backdrop-blur-md md:px-9">
         <a href="/" aria-label="Back to URBANOVA home" className="group flex items-center gap-3">
-          <div className="relative grid h-9 w-9 place-items-center border border-[#f4b94e]/75 bg-[#f4b94e]/10">
-            <span className="h-3 w-3 bg-[#f4b94e] transition-transform group-hover:scale-75" />
-            <span className="absolute inset-1.5 border border-[#f4b94e]/30" />
+          <div className="brand-mark relative grid h-9 w-9 place-items-center border">
+            <span className="brand-mark-core h-3 w-3 transition-transform group-hover:scale-75" />
+            <span className="brand-mark-frame absolute inset-1.5 border" />
           </div>
           <div>
-            <p className="font-['Space_Grotesk'] text-[16px] font-bold tracking-[.22em] text-[#f2eee4]">URBANOVA</p>
+            <p className="brand-wordmark font-['Space_Grotesk'] text-[16px] font-bold tracking-[.22em]">URBANOVA</p>
             <p className="font-mono text-[9px] uppercase tracking-[.18em] text-[#8891a7]">Living city / 04 districts</p>
           </div>
         </a>
@@ -763,8 +763,8 @@ export function Urbanova3D() {
       <section className="relative mx-auto grid max-w-[1480px] grid-cols-1 gap-5 px-5 py-7 md:px-9 lg:grid-cols-[minmax(300px,370px)_1fr] lg:gap-8 lg:py-10">
         <aside className="relative z-20 flex flex-col justify-between lg:min-h-[660px]">
           <div>
-            <div className="mb-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.2em] text-[#8891a7]">
-              <span className="h-2 w-2 rounded-full bg-[#f4b94e] shadow-[0_0_0_4px_rgba(244,185,78,.16)]" /> 37.781 / -122.401
+            <div className="mb-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.2em] text-[#a7afc0]">
+              <span className="h-2 w-2 rounded-full bg-[#e4786d] shadow-[0_0_0_4px_rgba(228,120,109,.16)]" /> 37.781 / -122.401
             </div>
             <h1 className="max-w-sm font-['Space_Grotesk'] text-[clamp(42px,5vw,78px)] font-semibold leading-[.92] tracking-[-.07em] text-[#f2eee4]">
               Your work is already a <em className="not-italic text-[#f4b94e]">city.</em>

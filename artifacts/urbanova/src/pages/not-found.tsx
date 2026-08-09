@@ -5,11 +5,11 @@ export default function NotFound() {
   return (
     <div className="noise min-h-[100dvh]">
       <main className="mx-auto flex min-h-[calc(100dvh-1px)] max-w-3xl items-center px-5 py-16 sm:px-8">
-        <section className="w-full border border-border bg-card/70 p-7 shadow-[0_25px_80px_rgba(0,0,0,.25)] sm:p-10">
+        <section className="w-full border border-primary/30 bg-card/75 p-7 shadow-[0_25px_80px_rgba(4,10,28,.42)] sm:p-10">
           <div className="flex items-start justify-between gap-6">
             <div>
               <div className="mb-5 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.2em] text-primary">
-                <span className="grid size-9 place-items-center border border-primary/60 bg-primary/10">
+                <span className="brand-mark grid size-9 place-items-center border">
                   <Compass size={17} />
                 </span>
                 Lost district

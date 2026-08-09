@@ -6,13 +6,13 @@ import { Building2, RotateCcw, Trees, TrainFront } from "lucide-react";
 type Layer = "district" | "mobility" | "green";
 
 const buildings = [
-  { x: -6.4, z: -1.3, w: 2.2, d: 2.1, h: 3.8, tone: "#765146", code: "SQ-01", accent: "#f4b94e" },
-  { x: -4.3, z: -2.6, w: 1.7, d: 1.7, h: 5.5, tone: "#263c58", code: "WR-02", accent: "#4bb5a9" },
-  { x: -2.1, z: 1.5, w: 2.4, d: 2.1, h: 3, tone: "#8a662d", code: "CM-03", accent: "#e4786d" },
-  { x: 0.6, z: -1.6, w: 2, d: 2.3, h: 6.8, tone: "#284d59", code: "AH-04", accent: "#9b8ad6" },
-  { x: 3.2, z: 0.3, w: 1.9, d: 2.1, h: 4.2, tone: "#5a4a39", code: "SQ-01", accent: "#f4b94e" },
-  { x: 5.5, z: -2.3, w: 2.5, d: 2, h: 2.8, tone: "#315b62", code: "WR-02", accent: "#4bb5a9" },
-  { x: 7.1, z: 1.7, w: 2, d: 2.2, h: 5, tone: "#514766", code: "AH-04", accent: "#9b8ad6" },
+  { x: -6.4, z: -1.3, w: 2.2, d: 2.1, h: 3.8, tone: "#594a52", code: "SQ-01", accent: "#f4b94e" },
+  { x: -4.3, z: -2.6, w: 1.7, d: 1.7, h: 5.5, tone: "#294252", code: "WR-02", accent: "#4bb5a9" },
+  { x: -2.1, z: 1.5, w: 2.4, d: 2.1, h: 3, tone: "#66515a", code: "CM-03", accent: "#e4786d" },
+  { x: 0.6, z: -1.6, w: 2, d: 2.3, h: 6.8, tone: "#38405b", code: "AH-04", accent: "#9b8ad6" },
+  { x: 3.2, z: 0.3, w: 1.9, d: 2.1, h: 4.2, tone: "#544955", code: "SQ-01", accent: "#f4b94e" },
+  { x: 5.5, z: -2.3, w: 2.5, d: 2, h: 2.8, tone: "#2e555c", code: "WR-02", accent: "#4bb5a9" },
+  { x: 7.1, z: 1.7, w: 2, d: 2.2, h: 5, tone: "#514b6b", code: "AH-04", accent: "#9b8ad6" },
 ] as const;
 
 function addTree(group: THREE.Group, x: number, z: number, scale: number) {
@@ -23,7 +23,7 @@ function addTree(group: THREE.Group, x: number, z: number, scale: number) {
   trunk.position.set(x, 0.3 * scale, z);
   const crown = new THREE.Mesh(
     new THREE.IcosahedronGeometry(0.44 * scale, 1),
-    new THREE.MeshStandardMaterial({ color: "#28707a", roughness: 0.9 }),
+    new THREE.MeshStandardMaterial({ color: "#3d8a7d", roughness: 0.9 }),
   );
   crown.position.set(x, 0.85 * scale, z);
   group.add(trunk, crown);
@@ -69,8 +69,8 @@ export function UrbanovaCityPreview() {
     }
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#11172a");
-    scene.fog = new THREE.Fog("#11172a", 17, 31);
+    scene.background = new THREE.Color("#10172a");
+    scene.fog = new THREE.Fog("#10172a", 17, 31);
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(12.5, 11.5, 15);
     cameraRef.current = camera;
@@ -98,7 +98,7 @@ export function UrbanovaCityPreview() {
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    const grid = new THREE.GridHelper(27, 27, "#28556a", "#1d3047");
+    const grid = new THREE.GridHelper(27, 27, "#5a7691", "#263b56");
     grid.position.y = 0.04;
     (grid.material as THREE.Material).opacity = 0.42;
     (grid.material as THREE.Material).transparent = true;
@@ -120,7 +120,7 @@ export function UrbanovaCityPreview() {
     const water = new THREE.Mesh(
       new THREE.PlaneGeometry(7.5, 24),
       new THREE.MeshStandardMaterial({
-        color: "#174b62",
+        color: "#205c6c",
         transparent: true,
         opacity: 0.82,
         roughness: 0.35,
@@ -202,7 +202,7 @@ export function UrbanovaCityPreview() {
     ].forEach(([x, z, width, height], index) => {
       const background = new THREE.Mesh(
         new THREE.BoxGeometry(width, height, 1.05),
-        new THREE.MeshStandardMaterial({ color: index % 2 ? "#1d3347" : "#22354b", roughness: 0.86 }),
+        new THREE.MeshStandardMaterial({ color: index % 2 ? "#223b50" : "#2b3c54", roughness: 0.86 }),
       );
       background.position.set(x, height / 2, z);
       districtGroup.add(background);
@@ -358,13 +358,13 @@ export function UrbanovaCityPreview() {
   };
 
   return (
-    <div className="relative h-full min-h-[390px] overflow-hidden border border-border bg-[#11172a] shadow-[0_25px_70px_rgba(0,0,0,.3)] sm:min-h-[510px]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,#263044_0%,#131b30_48%,#0d1221_100%)]" />
+    <div className="relative h-full min-h-[390px] overflow-hidden border border-border bg-[#10172a] shadow-[0_25px_70px_rgba(4,10,28,.42)] sm:min-h-[510px]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,#303852_0%,#162039_48%,#0b1020_100%)]" />
       <canvas ref={canvasRef} className="absolute inset-0 size-full cursor-grab active:cursor-grabbing" aria-label="Interactive 3D city model" />
       <div className="pointer-events-none absolute left-5 top-5 z-10 font-mono text-[9px] uppercase tracking-[.17em] text-[#8891a7]">
         URBANOVA / live city model
       </div>
-      <div className="absolute right-5 top-5 z-10 flex items-center gap-2 border border-[#2b344b] bg-[#11182b]/80 px-3 py-2 backdrop-blur-md">
+      <div className="absolute right-5 top-5 z-10 flex items-center gap-2 border border-[#40506a] bg-[#11182b]/80 px-3 py-2 backdrop-blur-md">
         <span className={`h-1.5 w-1.5 ${webglReady ? "animate-pulse bg-[#4bb5a9]" : "bg-[#e4786d]"}`} />
         <span className="font-mono text-[9px] uppercase tracking-[.14em] text-[#c0c4cf]">
           {webglReady ? "Simulation live" : "WebGL unavailable"}

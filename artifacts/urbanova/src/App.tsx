@@ -52,11 +52,11 @@ function saveSession(user: User) { localStorage.setItem('urbanova-session', JSON
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-3 group" data-testid="link-logo">
-      <span className="relative grid size-8 place-items-center border border-primary/70 bg-primary/10 transition-transform group-hover:rotate-45">
-        <span className="size-2.5 bg-primary" />
-        <span className="absolute inset-1.5 border border-primary/30" />
+      <span className="brand-mark relative grid size-8 place-items-center border transition-transform duration-500 group-hover:rotate-45">
+        <span className="brand-mark-core size-2.5" />
+        <span className="brand-mark-frame absolute inset-1.5 border" />
       </span>
-      {!compact && <span className="font-display text-[1.05rem] font-bold tracking-[.2em] text-foreground">URBANOVA</span>}
+      {!compact && <span className="brand-wordmark font-display text-[1.05rem] font-bold tracking-[.2em]">URBANOVA</span>}
     </Link>
   );
 }
@@ -81,7 +81,7 @@ function SiteHeader() {
         </nav>
         <div className="hidden items-center gap-3 md:flex">
           <Link href="/dashboard" data-testid="link-command-center" className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground transition-colors hover:text-foreground">Command center</Link>
-          <Link href="/login" data-testid="link-enter-city" className="flex items-center gap-2 border border-primary bg-primary px-4 py-2.5 font-mono text-[10px] font-medium uppercase tracking-[.15em] text-primary-foreground transition-transform hover:-translate-y-0.5">Enter city <ArrowUpRight size={14} /></Link>
+           <Link href="/login" data-testid="link-enter-city" className="flex items-center gap-2 border border-primary bg-primary px-4 py-2.5 font-mono text-[10px] font-medium uppercase tracking-[.15em] text-primary-foreground transition-transform hover:-translate-y-0.5 hover:bg-[#f7c96d]">Enter city <ArrowUpRight size={14} /></Link>
         </div>
         <button type="button" aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} onClick={() => setOpen(!open)} className="grid size-10 place-items-center border border-border text-foreground md:hidden" data-testid="button-mobile-nav">{open ? <X size={18} /> : <Menu size={18} />}</button>
       </div>
@@ -96,7 +96,7 @@ function SiteHeader() {
 }
 
 function Footer() {
-  return <footer className="border-t border-border/60 bg-[#0d1020]">
+  return <footer className="border-t border-border/60 bg-[#0b1020]">
     <div className="mx-auto flex max-w-7xl flex-col gap-7 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
       <div><Logo /><p className="mt-4 max-w-xs font-mono text-[10px] leading-5 tracking-[.08em] text-muted-foreground">A living map for the work you put into the world.</p></div>
       <div className="flex flex-wrap gap-x-6 gap-y-3 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link href="/legal" data-testid="link-footer-legal" className="hover:text-primary">Legal center</Link><Link href="/privacy" data-testid="link-footer-privacy" className="hover:text-primary">Privacy</Link><Link href="/terms" data-testid="link-footer-terms" className="hover:text-primary">Terms</Link><Link href="/cookies" data-testid="link-footer-cookies" className="hover:text-primary">Cookies</Link><Link href="/about" data-testid="link-footer-about" className="hover:text-primary">About</Link><a href="https://github.com/appurbanova/URBANOVA" target="_blank" rel="noreferrer" data-testid="link-footer-github" className="flex items-center gap-2 hover:text-primary">Source <Github size={13} /></a></div>
@@ -475,7 +475,7 @@ function HowTo() {
 }
 
 function Roadmap() {
-  const months = [['AUG 2026', 'Foundations', 'Public city profiles, source connections, and the first readable health model.', true], ['SEP 2026', 'Districts', 'More nuanced districts for collaboration, learning, and long-running projects.', true], ['OCT 2026', 'Wayfinding', 'A clearer route through your city, with stronger links between a signal and its source.', false], ['NOV 2026', 'Civic layer', 'Shared spaces for builders to leave context, notes, and invitations for the people arriving next.', false], ['DEC 2026', 'Night mode', 'A slower, deeper read of your year in public. What stayed lit, what changed shape, what comes next.', false]];
+  const months = [['AUG 2026', 'Foundations', 'Landing page live at urbanova.app, listing on Orynth.dev, Mint NFT City Urbanova, and the first readable health model.', true], ['SEP 2026', 'Districts', 'Four districts online with deeper source connections and on-chain city ownership.', true], ['OCT 2026', 'Wayfinding', 'A clearer route through your city, with stronger links between a signal and its source.', false], ['NOV 2026', 'Civic layer', 'Shared spaces for builders to leave context, notes, and invitations, plus a marketplace for city NFTs.', false], ['DEC 2026', 'Night mode', 'A slower, deeper read of your year in public. What stayed lit, what changed shape, and what to mint next.', false]];
   return <div className="noise"><SiteHeader /><main className="mx-auto max-w-7xl px-5 py-14 sm:px-8 md:py-24"><div className="grid gap-10 md:grid-cols-[.8fr_1.2fr]"><div><SectionLabel>Roadmap / 2026</SectionLabel><h1 className="font-display text-5xl font-bold leading-[.9] tracking-[-.06em] sm:text-7xl">Building the city in public.</h1><p className="mt-7 max-w-md leading-7 text-muted-foreground">A monthly view of the places, tools, and rituals we are bringing online next.</p></div><div className="border border-border bg-card/50 p-5 sm:p-8"><div className="mb-4 flex items-center justify-between font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground"><span>Progress map</span><span>2 of 5 live</span></div><div className="h-1 bg-muted"><div className="h-full w-2/5 bg-primary" /></div><div className="mt-8 space-y-0">{months.map(([month, title, text, complete], i) => <div key={month as string} className="relative grid grid-cols-[76px_18px_1fr] gap-4 pb-9 last:pb-0"><div className={`pt-1 font-mono text-[10px] tracking-[.08em] ${complete ? 'text-primary' : 'text-muted-foreground'}`}>{month as string}</div><div className="relative flex justify-center"><span className={`z-10 mt-1.5 size-3 border-2 ${complete ? 'border-primary bg-primary' : 'border-muted-foreground/50 bg-card'}`} />{i < months.length - 1 && <span className={`absolute top-4 h-full w-px ${complete ? 'bg-primary/60' : 'bg-border'}`} />}</div><div><h2 className="font-display text-xl font-semibold">{title as string}</h2><p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{text as string}</p><span className={`mt-3 inline-block font-mono text-[9px] uppercase tracking-[.15em] ${complete ? 'text-secondary' : 'text-muted-foreground'}`}>{complete ? 'shipped' : 'in the works'}</span></div></div>)}</div></div></div><section className="mt-16 grid gap-5 sm:grid-cols-2"><div className="border border-primary/50 bg-primary/5 p-6"><Terminal size={20} className="text-primary" /><h2 className="mt-10 font-display text-2xl font-semibold">The roadmap is a conversation.</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">We build in the open and adjust when the city tells us something we did not expect.</p></div><div className="border border-border bg-card/50 p-6"><CircleHelp size={20} className="text-secondary" /><h2 className="mt-10 font-display text-2xl font-semibold">Have a useful signal?</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">The best next district usually starts as a precise question from someone using the map.</p></div></section></main><Footer /></div>;
 }
 
