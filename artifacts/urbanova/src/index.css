@@ -177,3 +177,91 @@
 @media (max-width: 639px) {
   .home-reveal { transform: translateY(12px); }
 }
+
+/* --- Interactive & animated additions --- */
+
+.hero-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .5s ease;
+  background: radial-gradient(circle 280px at var(--mx, 50%) var(--my, 50%), rgba(244,185,78,.10), rgba(75,181,169,.06) 40%, transparent 70%);
+  z-index: 5;
+}
+.hero-spotlight.is-active { opacity: 1; }
+
+@keyframes particle-float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: var(--p-opacity, .5); }
+  90% { opacity: var(--p-opacity, .5); }
+  100% { transform: translateY(-120px) translateX(var(--p-drift, 20px)); opacity: 0; }
+}
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particle-float var(--p-duration, 8s) ease-in-out infinite;
+  animation-delay: var(--p-delay, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 30s linear infinite;
+  will-change: transform;
+}
+.ticker-mask {
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.district-card-3d {
+  transform-style: preserve-3d;
+  transition: transform .2s ease-out, border-color .3s ease, box-shadow .4s ease;
+  will-change: transform;
+}
+.district-card-3d .card-3d-inner {
+  transform: translateZ(40px);
+  transition: transform .2s ease-out;
+}
+
+@keyframes rotate-word-in {
+  0% { opacity: 0; transform: translateY(100%) rotateX(-90deg); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+@keyframes rotate-word-out {
+  0% { opacity: 1; transform: translateY(0) rotateX(0); }
+  100% { opacity: 0; transform: translateY(-100%) rotateX(90deg); }
+}
+.rotate-word-enter { animation: rotate-word-in .5s cubic-bezier(.22,1,.36,1) both; }
+.rotate-word-exit { animation: rotate-word-out .4s cubic-bezier(.22,1,.36,1) both; }
+
+@keyframes glow-breathe {
+  0%, 100% { opacity: .4; transform: scale(1); }
+  50% { opacity: .7; transform: scale(1.08); }
+}
+.animate-glow-breathe { animation: glow-breathe 6s ease-in-out infinite; }
+
+@keyframes pulse-ring {
+  0% { transform: scale(.8); opacity: .8; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  animation: pulse-ring 2.5s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .particle, .ticker-track, .pulse-ring, .animate-glow-breathe { animation: none !important; }
+  .hero-spotlight { display: none; }
+  .district-card-3d { transform: none !important; }
+}
