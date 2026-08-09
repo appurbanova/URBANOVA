@@ -76,6 +76,7 @@
   },
   "dependencies": {
     "@types/three": "^0.185.4",
-    "three": "^0.185.1"
+    "three": "^0.185.1",
+    "@supabase/supabase-js": "^2.50.0"
   }
 }
