@@ -6,8 +6,8 @@ import {
   Compass, Cookie, Eye, FileText, Github, Layers3, LockKeyhole, LogOut, Menu, Network, Orbit,
   Radio, Scale, ShieldCheck, Terminal, UserRound, WalletCards, X, Zap
 } from 'lucide-react';
-import { SiApple, SiGoogleplay } from 'react-icons/si';
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { SiApple, SiDiscord, SiGoogleplay, SiTelegram, SiX } from 'react-icons/si';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import NotFound from '@/pages/not-found';
 import { Urbanova3D } from '@/components/Urbanova3D';
@@ -64,7 +64,7 @@ function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
-  const links = [['/demo', 'Demo'], ['/about', 'About'], ['/how-to', 'How it works'], ['/roadmap', 'Roadmap']];
+  const links = [['/demo', 'Demo'], ['/about', 'About'], ['/how-to', 'How it works'], ['/roadmap', 'Roadmap'], ['/community', 'Community']];
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
@@ -127,6 +127,11 @@ const seoByPath: Record<string, { title: string; description: string; indexable:
   '/roadmap': {
     title: 'URBANOVA Roadmap | Building the Digital City',
     description: 'Follow the URBANOVA roadmap as the living digital city grows from a thoughtful public-work map into a richer builder environment.',
+    indexable: true,
+  },
+  '/community': {
+    title: 'URBANOVA Community | Join the Living Digital City',
+    description: 'Join the URBANOVA community across X, Telegram, and Discord. Connect with builders shaping a living digital city from public work.',
     indexable: true,
   },
   '/cookies': {
@@ -684,6 +689,125 @@ function Dashboard() {
 
 function Metric({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: string; detail: string }) { return <div className="border border-border bg-card/60 p-5"><div className="flex items-center gap-2 text-secondary">{icon}<span className="font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground">{label}</span></div><div className="mt-5 font-display text-3xl font-semibold">{value}</div><p className="mt-2 text-xs leading-5 text-muted-foreground">{detail}</p></div>; }
 
+function CommunityPage() {
+  const socials = [
+    {
+      name: 'X (Twitter)',
+      handle: '@appurbanova',
+      href: 'https://x.com/appurbanova',
+      Icon: SiX,
+      accent: 'rgba(234,230,213,.72)',
+      description: 'Follow us for product updates, builder spotlights, and city signals in real time.',
+    },
+    {
+      name: 'Telegram Channel',
+      handle: 't.me/appurbanova',
+      href: 'https://t.me/appurbanova',
+      Icon: SiTelegram,
+      accent: 'rgba(75,181,169,.82)',
+      description: 'Join the channel for announcements, alpha drops, and direct conversation with the team.',
+    },
+    {
+      name: 'Discord Server',
+      handle: 'discord.gg/9AA3mv2Jw',
+      href: 'https://discord.gg/9AA3mv2Jw',
+      Icon: SiDiscord,
+      accent: 'rgba(155,138,214,.82)',
+      description: 'Hop into the Discord to meet other builders, share work in progress, and shape the city together.',
+    },
+  ];
+
+  return (
+    <div className="noise min-h-screen">
+      <SiteHeader />
+      <section className="relative overflow-hidden">
+        <div className="aurora-mesh" aria-hidden="true" />
+        <div className="aurora-mesh-3" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-4xl px-5 pt-14 pb-10 sm:px-8 sm:pt-24 sm:pb-14">
+          <SectionLabel>The City Speaks</SectionLabel>
+          <h1 className="font-display mt-4 text-3xl font-bold leading-tight text-balance sm:text-5xl">
+            <span className="brand-wordmark">A living city is built</span>
+            <br className="hidden sm:block" /> by the people who wander it.
+          </h1>
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            URBANOVA is more than a product. It is a shared map of public
+            builder work, a place where commits become blocks, conversations
+            become streets, and communities become neighborhoods. Every
+            contribution leaves a light on the grid, and every voice shapes
+            the skyline.
+          </p>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            We gather across three spaces. Pick the one that fits how you want
+            to move through the city.
+          </p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 pb-20 sm:pb-28">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {socials.map((s, i) => (
+            <a
+              key={s.name}
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`district-card-3d group relative flex flex-col gap-4 rounded-[var(--radius-lg)] border border-card-border bg-card p-6 shadow-[var(--shadow-sm)] stagger-${i + 1}`}
+              style={
+                {
+                  ['--card-glow' as string]: s.accent,
+                  ['--card-glow-shadow' as string]: s.accent,
+                } as CSSProperties
+              }
+            >
+              <div className="shine-overlay" aria-hidden="true" />
+              <div className="card-3d-inner flex items-center gap-4">
+                <span
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-card-border text-foreground transition-transform duration-300 group-hover:scale-110"
+                  style={{ color: s.accent }}
+                >
+                  <s.Icon className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-display text-lg font-semibold leading-tight">
+                    {s.name}
+                  </p>
+                  <p className="font-mono text-xs text-muted-foreground truncate">
+                    {s.handle}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {s.description}
+              </p>
+              <div className="mt-auto flex items-center gap-2 pt-2 text-sm font-medium text-foreground transition-colors group-hover:text-[var(--urban-teal)]">
+                <span>Open channel</span>
+                <ArrowUpRight
+                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                  aria-hidden="true"
+                />
+              </div>
+            </a>
+          ))}
+        </div>
+
+        <div className="mt-14 rounded-[var(--radius-lg)] border border-card-border bg-card/60 p-6 sm:p-8">
+          <h2 className="font-display text-xl font-semibold sm:text-2xl">
+            How the city grows
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Every retweet, every channel message, every Discord thread is a
+            signal. URBANOVA listens to those signals and turns them into
+            districts you can explore, milestones you can track, and neighbors
+            you can build alongside. The community is not an audience for the
+            product. The community is the product.
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+}
+
 function About() {
   return <div className="noise"><SiteHeader /><main><section className="mx-auto max-w-7xl px-5 pb-16 pt-14 sm:px-8 md:pb-24 md:pt-24"><SectionLabel>A small studio building a new map</SectionLabel><h1 className="max-w-5xl font-display text-[clamp(3.4rem,9vw,8rem)] font-bold leading-[.88] tracking-[-.08em]">Cities are not made of <span className="text-primary">buildings.</span></h1><div className="mt-10 grid gap-8 md:grid-cols-[1fr_1fr] md:pl-[25%]"><p className="text-xl leading-8 text-foreground">They are made of the relationships between them. URBANOVA is an independent studio exploring what happens when a builder's public work is given a spatial language.</p><p className="leading-7 text-muted-foreground">We started with a simple observation: a developer's work is everywhere, but rarely together. A repository here. A note there. A conversation somewhere else. We wanted a surface that could hold the whole practice without reducing it to a score.</p></div></section><section className="border-y border-border/60 bg-[#101323]"><div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 md:grid-cols-[.7fr_1.3fr] md:py-24"><div><SectionLabel>Our principles</SectionLabel><h2 className="font-display text-3xl font-semibold tracking-[-.04em]">Civic by default.</h2></div><div className="grid gap-8 sm:grid-cols-2">{[['01', 'Public work deserves context', 'Activity is not a feed of disconnected moments. It has shape, rhythm, and neighborhoods.'], ['02', 'Metrics should make room', 'We use measurement as a way to notice, not a way to rank. A quiet district is still part of the city.'], ['03', 'Tools should feel inhabitable', 'The command center is designed for returning to, not checking off. It should become familiar.'], ['04', 'The map stays yours', 'Your data, your pace, your choices. URBANOVA is a lens, never an owner.']].map(([num, title, text]) => <div key={num} className="border-t border-border pt-4"><span className="font-mono text-[10px] text-primary">{num}</span><h3 className="mt-8 font-display text-xl font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p></div>)}</div></div></section><section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-24"><div className="flex flex-col items-start justify-between gap-8 border-l-2 border-primary pl-6 md:flex-row md:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[.18em] text-primary">A note from the studio</div><p className="mt-4 max-w-2xl font-display text-3xl leading-tight tracking-[-.04em] sm:text-4xl">“The best map is the one that helps you notice where you are, and choose where to go next.”</p></div><Link href="/demo" data-testid="link-about-demo" className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.15em] text-primary hover:underline">Walk the demo <ArrowUpRight size={14} /></Link></div></section></main><Footer /></div>;
 }
@@ -724,7 +848,7 @@ function Terms() {
 }
 
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route path="/community" component={CommunityPage} /><Route component={NotFound} /></Switch>;
 }
 
 function App() {
