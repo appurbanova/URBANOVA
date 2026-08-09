@@ -10,6 +10,7 @@ import { SiApple, SiGoogleplay } from 'react-icons/si';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import NotFound from '@/pages/not-found';
+import MiniGames from '@/pages/MiniGames';
 import { Urbanova3D } from '@/components/Urbanova3D';
 import { UrbanovaCityPreview } from '@/components/UrbanovaCityPreview';
 
@@ -65,7 +66,7 @@ function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
-  const links = [['/demo', 'Demo'], ['/about', 'About'], ['/how-to', 'How it works'], ['/roadmap', 'Roadmap']];
+  const links = [['/demo', 'Demo'], ['/mini-games', 'Mini Games'], ['/about', 'About'], ['/how-to', 'How it works'], ['/roadmap', 'Roadmap']];
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
@@ -505,7 +506,7 @@ function Terms() {
 }
 
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route path="/mini-games" component={MiniGames} /><Route component={NotFound} /></Switch>;
 }
 
 function App() {
