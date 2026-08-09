@@ -99,6 +99,9 @@ function Footer() {
     <div className="mx-auto flex max-w-7xl flex-col gap-7 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
       <div><Logo /><p className="mt-4 max-w-xs font-mono text-[10px] leading-5 tracking-[.08em] text-muted-foreground">A living map for the work you put into the world.</p></div>
       <div className="flex flex-wrap gap-x-6 gap-y-3 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link href="/legal" data-testid="link-footer-legal" className="hover:text-primary">Legal center</Link><Link href="/privacy" data-testid="link-footer-privacy" className="hover:text-primary">Privacy</Link><Link href="/terms" data-testid="link-footer-terms" className="hover:text-primary">Terms</Link><Link href="/cookies" data-testid="link-footer-cookies" className="hover:text-primary">Cookies</Link><Link href="/about" data-testid="link-footer-about" className="hover:text-primary">About</Link><Link href="/community" data-testid="link-footer-community" className="hover:text-primary">Community</Link><a href="https://github.com/appurbanova/URBANOVA" target="_blank" rel="noreferrer" data-testid="link-footer-github" className="flex items-center gap-2 hover:text-primary">Source <Github size={13} /></a></div>
+      <a href="https://orynth.dev/projects/urbanova" target="_blank" rel="noopener" className="mt-1 inline-block opacity-80 transition-opacity hover:opacity-100" aria-label="Featured on Orynth">
+        <img src="https://orynth.dev/api/badge/urbanova?theme=light&style=default" alt="Featured on Orynth" width="130" height="40" className="block" />
+      </a>
     </div>
   </footer>;
 }
