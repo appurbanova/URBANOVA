@@ -98,7 +98,7 @@ function Footer() {
   return <footer className="border-t border-border/60 bg-[#0b1020]">
     <div className="mx-auto flex max-w-7xl flex-col gap-7 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
       <div><Logo /><p className="mt-4 max-w-xs font-mono text-[10px] leading-5 tracking-[.08em] text-muted-foreground">A living map for the work you put into the world.</p></div>
-      <div className="flex flex-wrap gap-x-6 gap-y-3 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link href="/legal" data-testid="link-footer-legal" className="hover:text-primary">Legal center</Link><Link href="/privacy" data-testid="link-footer-privacy" className="hover:text-primary">Privacy</Link><Link href="/terms" data-testid="link-footer-terms" className="hover:text-primary">Terms</Link><Link href="/cookies" data-testid="link-footer-cookies" className="hover:text-primary">Cookies</Link><Link href="/about" data-testid="link-footer-about" className="hover:text-primary">About</Link><a href="https://github.com/appurbanova/URBANOVA" target="_blank" rel="noreferrer" data-testid="link-footer-github" className="flex items-center gap-2 hover:text-primary">Source <Github size={13} /></a></div>
+      <div className="flex flex-wrap gap-x-6 gap-y-3 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link href="/legal" data-testid="link-footer-legal" className="hover:text-primary">Legal center</Link><Link href="/privacy" data-testid="link-footer-privacy" className="hover:text-primary">Privacy</Link><Link href="/terms" data-testid="link-footer-terms" className="hover:text-primary">Terms</Link><Link href="/cookies" data-testid="link-footer-cookies" className="hover:text-primary">Cookies</Link><Link href="/about" data-testid="link-footer-about" className="hover:text-primary">About</Link><Link href="/community" data-testid="link-footer-community" className="hover:text-primary">Community</Link><a href="https://github.com/appurbanova/URBANOVA" target="_blank" rel="noreferrer" data-testid="link-footer-github" className="flex items-center gap-2 hover:text-primary">Source <Github size={13} /></a></div>
     </div>
   </footer>;
 }
@@ -689,6 +689,55 @@ function Dashboard() {
 
 function Metric({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: string; detail: string }) { return <div className="border border-border bg-card/60 p-5"><div className="flex items-center gap-2 text-secondary">{icon}<span className="font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground">{label}</span></div><div className="mt-5 font-display text-3xl font-semibold">{value}</div><p className="mt-2 text-xs leading-5 text-muted-foreground">{detail}</p></div>; }
 
+function SocialCard({ social: s, index: i }: { social: { name: string; handle: string; href: string; Icon: typeof SiX; accent: string; description: string }; index: number }) {
+  const { ref, onMouseMove, onMouseLeave } = useTilt<HTMLAnchorElement>(5);
+  return (
+    <a
+      ref={ref as React.RefObject<HTMLAnchorElement>}
+      href={s.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      className={`district-card-3d group animate-rise stagger-${i + 1} relative flex flex-col gap-4 rounded-[var(--radius-lg)] border border-card-border bg-card p-6 shadow-[var(--shadow-sm)]`}
+      style={
+        {
+          ['--card-glow' as string]: s.accent,
+          ['--card-glow-shadow' as string]: s.accent,
+        } as CSSProperties
+      }
+    >
+      <div className="shine-overlay" aria-hidden="true" />
+      <div className="card-3d-inner flex items-center gap-4">
+        <span
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-card-border text-foreground transition-transform duration-300 group-hover:scale-110"
+          style={{ color: s.accent }}
+        >
+          <s.Icon className="h-6 w-6" aria-hidden="true" />
+        </span>
+        <div className="min-w-0">
+          <p className="font-display text-lg font-semibold leading-tight">
+            {s.name}
+          </p>
+          <p className="font-mono text-xs text-muted-foreground truncate">
+            {s.handle}
+          </p>
+        </div>
+      </div>
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {s.description}
+      </p>
+      <div className="mt-auto flex items-center gap-2 pt-2 text-sm font-medium text-foreground transition-colors group-hover:text-[var(--urban-teal)]">
+        <span>Open channel</span>
+        <ArrowUpRight
+          className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+          aria-hidden="true"
+        />
+      </div>
+    </a>
+  );
+}
+
 function CommunityPage() {
   const socials = [
     {
@@ -719,24 +768,27 @@ function CommunityPage() {
 
   return (
     <div className="noise min-h-screen">
+      <ScrollProgress />
       <SiteHeader />
       <section className="relative overflow-hidden">
         <div className="aurora-mesh" aria-hidden="true" />
         <div className="aurora-mesh-3" aria-hidden="true" />
         <div className="relative z-10 mx-auto max-w-4xl px-5 pt-14 pb-10 sm:px-8 sm:pt-24 sm:pb-14">
-          <SectionLabel>The City Speaks</SectionLabel>
-          <h1 className="font-display mt-4 text-3xl font-bold leading-tight text-balance sm:text-5xl">
+          <div className="animate-rise">
+            <SectionLabel>The City Speaks</SectionLabel>
+          </div>
+          <h1 className="font-display animate-rise mt-4 text-3xl font-bold leading-tight text-balance [animation-delay:80ms] sm:text-5xl">
             <span className="brand-wordmark">A living city is built</span>
             <br className="hidden sm:block" /> by the people who wander it.
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="animate-rise mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground [animation-delay:160ms] sm:text-lg">
             URBANOVA is more than a product. It is a shared map of public
             builder work, a place where commits become blocks, conversations
             become streets, and communities become neighborhoods. Every
             contribution leaves a light on the grid, and every voice shapes
             the skyline.
           </p>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="animate-rise mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground [animation-delay:240ms] sm:text-lg">
             We gather across three spaces. Pick the one that fits how you want
             to move through the city.
           </p>
@@ -746,47 +798,7 @@ function CommunityPage() {
       <section className="mx-auto max-w-5xl px-5 pb-20 sm:pb-28">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {socials.map((s, i) => (
-            <a
-              key={s.name}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`district-card-3d group relative flex flex-col gap-4 rounded-[var(--radius-lg)] border border-card-border bg-card p-6 shadow-[var(--shadow-sm)] stagger-${i + 1}`}
-              style={
-                {
-                  ['--card-glow' as string]: s.accent,
-                  ['--card-glow-shadow' as string]: s.accent,
-                } as CSSProperties
-              }
-            >
-              <div className="shine-overlay" aria-hidden="true" />
-              <div className="card-3d-inner flex items-center gap-4">
-                <span
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-card-border text-foreground transition-transform duration-300 group-hover:scale-110"
-                  style={{ color: s.accent }}
-                >
-                  <s.Icon className="h-6 w-6" aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-display text-lg font-semibold leading-tight">
-                    {s.name}
-                  </p>
-                  <p className="font-mono text-xs text-muted-foreground truncate">
-                    {s.handle}
-                  </p>
-                </div>
-              </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {s.description}
-              </p>
-              <div className="mt-auto flex items-center gap-2 pt-2 text-sm font-medium text-foreground transition-colors group-hover:text-[var(--urban-teal)]">
-                <span>Open channel</span>
-                <ArrowUpRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
-                  aria-hidden="true"
-                />
-              </div>
-            </a>
+            <SocialCard key={s.name} social={s} index={i} />
           ))}
         </div>
 
