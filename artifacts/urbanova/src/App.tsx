@@ -483,8 +483,8 @@ function CityTilt() {
     const rect = wrap.getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width - 0.5;
     const py = (e.clientY - rect.top) / rect.height - 0.5;
-    wrap.style.transform = `perspective(1200px) rotateX(${(-py * 6).toFixed(2)}deg) rotateY(${(px * 8).toFixed(2)}deg)`;
-    inner.style.transform = `translate3d(${(px * 16).toFixed(1)}px, ${(py * 12).toFixed(1)}px, 40px)`;
+    wrap.style.transform = `perspective(1200px) rotateX(${(-py * 4).toFixed(2)}deg) rotateY(${(px * 5).toFixed(2)}deg)`;
+    inner.style.transform = `translate3d(${(px * 10).toFixed(1)}px, ${(py * 8).toFixed(1)}px, 0)`;
   }, []);
   const onMouseLeave = useCallback(() => {
     const wrap = wrapRef.current;
@@ -493,17 +493,19 @@ function CityTilt() {
     if (inner) inner.style.transform = 'translate3d(0,0,0)';
   }, []);
   return (
-    <div className="city-canvas-shell relative min-h-[430px] animate-rise [animation-delay:120ms] sm:min-h-[470px] md:min-h-[540px]">
-      <div className="absolute -inset-12 bg-[radial-gradient(circle,rgba(244,185,78,.13),transparent_55%)]" />
-      <div ref={wrapRef} className="city-tilt-wrap relative h-full min-h-[430px] sm:min-h-[470px] md:min-h-[540px]" onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
-        <div ref={innerRef} className="city-tilt-inner absolute inset-0">
+    <div className="city-canvas-shell relative animate-rise [animation-delay:120ms]">
+      <div className="absolute -inset-8 bg-[radial-gradient(circle,rgba(244,185,78,.10),transparent_55%)]" />
+      <div ref={wrapRef} className="city-tilt-wrap relative overflow-hidden rounded-sm" onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
+        <div ref={innerRef} className="city-tilt-inner">
           <UrbanovaCityPreview />
         </div>
-        <div ref={healthRef} className="stat-badge absolute -bottom-3 right-2 z-20 border border-primary/40 bg-[#12172a]/90 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3 animate-glow-pulse">
+      </div>
+      <div className="mt-3 flex items-stretch gap-3">
+        <div ref={healthRef} className="stat-badge flex-1 border border-primary/40 bg-[#12172a]/90 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3">
           <div className="font-mono text-[8px] uppercase tracking-[.15em] text-primary">City health</div>
           <div className="mt-1 flex items-end gap-2"><span className="font-display text-2xl font-semibold sm:text-3xl">{healthValue.toFixed(1)}</span><span className="mb-1 font-mono text-[9px] text-muted-foreground sm:text-[10px]">/ 100</span></div>
         </div>
-        <div className="stat-badge stat-badge-delay absolute -top-2 -left-2 z-20 border border-secondary/40 bg-[#12172a]/90 px-3 py-2.5 backdrop-blur-md sm:px-4">
+        <div className="stat-badge stat-badge-delay flex-1 border border-secondary/40 bg-[#12172a]/90 px-3 py-2.5 backdrop-blur-md sm:px-4">
           <div className="font-mono text-[8px] uppercase tracking-[.15em] text-secondary">Districts</div>
           <div className="mt-1 font-display text-2xl font-semibold sm:text-3xl">4<span className="mb-1 ml-1 font-mono text-[9px] text-muted-foreground sm:text-[10px]">live</span></div>
         </div>
@@ -513,14 +515,7 @@ function CityTilt() {
 }
 
 function ScrollHint() {
-  return (
-    <div className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 md:flex" aria-hidden="true">
-      <span className="font-mono text-[8px] uppercase tracking-[.2em] text-muted-foreground">Scroll</span>
-      <span className="flex h-8 w-5 justify-center rounded-full border border-border/80 pt-1.5">
-        <span className="scroll-hint-dot h-1.5 w-1.5 rounded-full bg-primary" />
-      </span>
-    </div>
-  );
+  return null;
 }
 
 function ConstellationSVG() {
@@ -530,7 +525,7 @@ function ConstellationSVG() {
   ];
   const links = [[0,1],[1,2],[2,4],[3,4],[4,5],[1,6],[2,7],[3,6]];
   return (
-    <svg className="pointer-events-none absolute inset-0 size-full opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    <svg className="pointer-events-none absolute inset-0 size-full opacity-25" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       {links.map(([a, b], i) => (
         <line key={i} x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y}
           stroke="#f4b94e" strokeWidth=".15" className="constellation-line" style={{ animationDelay: `${i * .3}s` }} />
@@ -562,16 +557,16 @@ function Home() {
     return () => { reveal.disconnect(); };
   }, []);
   return <div className="noise"><ScrollProgress /><SiteHeader /><main>
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 grid-lines opacity-25" />
+    <section className="relative overflow-hidden pb-20">
+      <div className="absolute inset-0 grid-lines opacity-20" />
       <div className="aurora-mesh" aria-hidden="true" />
       <div className="aurora-mesh-3" aria-hidden="true" />
-      <Particles count={20} />
+      <Particles count={16} />
       <ConstellationSVG />
       <div ref={heroSpotRef} className="hero-spotlight" aria-hidden="true" />
       <div ref={heroGlowRef} className="hero-glow animate-gradient-drift -top-20 -left-20 size-[420px] bg-[#f4b94e]/20" />
       <div className="hero-glow animate-gradient-drift [animation-delay:6s] -right-32 top-40 size-[380px] bg-[#4bb5a9]/15" />
-      <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 pb-14 pt-10 sm:gap-10 sm:px-8 sm:pb-16 sm:pt-14 md:grid-cols-[.9fr_1.1fr] md:gap-8 md:pb-24 md:pt-24">
+      <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 pt-10 sm:px-8 sm:pt-14 md:grid-cols-[.9fr_1.1fr] md:gap-12 md:pt-24">
         <div className="relative z-10 animate-rise">
           <div className="hero-word" style={{ animationDelay: '0ms' }}><SectionLabel>Public activity, made legible</SectionLabel></div>
           <div className="mt-4"><HeroWords /></div>
@@ -582,7 +577,6 @@ function Home() {
         </div>
         <CityTilt />
       </div>
-      <ScrollHint />
     </section>
     <ActivityTicker />
     <section className="home-reveal border-y border-border/60 bg-[#101323]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[.75fr_1.25fr] md:py-20"><div><SectionLabel>Why a city</SectionLabel><h2 className="font-display text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">A better way to read a builder.</h2></div><div className="grid gap-8 sm:grid-cols-3"><Feature icon={<Orbit size={19} />} title="Find the signal" text="A quiet layer over your public work, connecting releases, writing, and conversation." /><Feature icon={<Layers3 size={19} />} title="See the shape" text="Districts reveal patterns that a chronological feed keeps flat and easy to miss." /><Feature icon={<Compass size={19} />} title="Choose your next" text="Use the city as a personal instrument for deciding where to put your attention." /></div></div></section>

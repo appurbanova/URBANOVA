@@ -227,7 +227,7 @@
   will-change: transform;
 }
 .district-card-3d .card-3d-inner {
-  transform: translateZ(40px);
+  transform: translateZ(20px);
   transition: transform .2s ease-out;
 }
 
@@ -283,10 +283,10 @@
 }
 .aurora-mesh {
   position: absolute;
-  inset: -40%;
+  inset: -20%;
   pointer-events: none;
-  filter: blur(80px);
-  opacity: .35;
+  filter: blur(70px);
+  opacity: .28;
   z-index: 0;
 }
 .aurora-mesh::before, .aurora-mesh::after {
@@ -295,21 +295,21 @@
   border-radius: 50%;
 }
 .aurora-mesh::before {
-  width: 50%; height: 50%; top: 10%; left: 15%;
-  background: radial-gradient(circle, rgba(244,185,78,.45), transparent 65%);
+  width: 45%; height: 45%; top: 10%; left: 15%;
+  background: radial-gradient(circle, rgba(244,185,78,.35), transparent 65%);
   animation: aurora-shift 22s ease-in-out infinite;
 }
 .aurora-mesh::after {
-  width: 45%; height: 45%; bottom: 5%; right: 10%;
-  background: radial-gradient(circle, rgba(75,181,169,.4), transparent 65%);
+  width: 40%; height: 40%; bottom: 5%; right: 10%;
+  background: radial-gradient(circle, rgba(75,181,169,.3), transparent 65%);
   animation: aurora-shift 28s ease-in-out infinite reverse;
 }
 .aurora-mesh-3 {
   position: absolute;
-  width: 40%; height: 40%; top: 40%; left: 45%;
+  width: 35%; height: 35%; top: 40%; left: 45%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(155,138,214,.3), transparent 65%);
-  filter: blur(80px);
+  background: radial-gradient(circle, rgba(155,138,214,.22), transparent 65%);
+  filter: blur(70px);
   animation: aurora-shift 25s ease-in-out infinite;
   animation-delay: -8s;
   pointer-events: none;
@@ -326,12 +326,13 @@
   transform-style: preserve-3d;
   transition: transform .15s ease-out;
   will-change: transform;
+  contain: layout paint;
 }
 
 /* Floating stat badges */
 @keyframes badge-float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-4px); }
 }
 .stat-badge {
   animation: badge-float 4s ease-in-out infinite;
