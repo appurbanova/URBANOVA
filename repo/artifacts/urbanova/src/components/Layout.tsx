@@ -5,8 +5,8 @@ import { Link, useLocation } from 'wouter';
 export function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-3 group" data-testid="link-logo">
-      <span className="relative grid size-8 place-items-center border border-primary/70 bg-primary/10 transition-transform group-hover:rotate-45">
-        <span className="size-2.5 bg-primary" />
+      <span className="logo-mark relative grid size-8 place-items-center border border-primary/70 bg-primary/10">
+        <span className="logo-inner size-2.5 bg-primary" />
         <span className="absolute inset-1.5 border border-primary/30" />
       </span>
       {!compact && <span className="font-display text-[1.05rem] font-bold tracking-[.2em] text-foreground">URBANOVA</span>}

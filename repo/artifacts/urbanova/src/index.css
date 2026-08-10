@@ -89,7 +89,7 @@
   .font-mono { font-family: var(--app-font-mono); }
   .text-balance { text-wrap: balance; }
   .grid-lines {
-    background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
     background-size: 48px 48px;
   }
   .noise::after {
@@ -97,10 +97,12 @@
     position: fixed;
     inset: 0;
     z-index: 50;
-    opacity: .035;
+    opacity: .018;
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
   }
+  .logo-mark { animation: logo-breathe 5s ease-in-out infinite; }
+  .logo-inner { animation: logo-inner-pulse 3s ease-in-out infinite; }
   .animate-rise { animation: rise .6s cubic-bezier(.22,1,.36,1) both; }
   .animate-pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
   .home-reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1); }
@@ -112,6 +114,8 @@
 @keyframes pulse-soft { 0%, 100% { opacity: .62; } 50% { opacity: 1; } }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 @keyframes float-soft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes logo-breathe { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(.92) rotate(6deg); } }
+@keyframes logo-inner-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.78); opacity: .7; } }
 @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 24px rgba(244,185,78,.12); } 50% { box-shadow: 0 0 40px rgba(244,185,78,.28); } }
 @keyframes gradient-drift { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(3%, -2%) scale(1.05); } 66% { transform: translate(-2%, 3%) scale(.98); } }
 

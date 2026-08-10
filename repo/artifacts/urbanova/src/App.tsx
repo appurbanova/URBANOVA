@@ -53,8 +53,8 @@ function saveSession(user: User) { localStorage.setItem('urbanova-session', JSON
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-3 group" data-testid="link-logo">
-      <span className="relative grid size-8 place-items-center border border-primary/70 bg-primary/10 transition-transform group-hover:rotate-45">
-        <span className="size-2.5 bg-primary" />
+      <span className="logo-mark relative grid size-8 place-items-center border border-primary/70 bg-primary/10">
+        <span className="logo-inner size-2.5 bg-primary" />
         <span className="absolute inset-1.5 border border-primary/30" />
       </span>
       {!compact && <span className="font-display text-[1.05rem] font-bold tracking-[.2em] text-foreground">URBANOVA</span>}
@@ -209,7 +209,7 @@ function CityMap({ active = [], onSelect, compact = false }: { active?: District
     { key: 'archive', points: '310,252 432,232 489,305 439,389 308,358 270,302' },
   ];
   return <div className={`relative overflow-hidden border border-border bg-[#101526] ${compact ? 'h-full min-h-[290px]' : 'aspect-[1.25/1] min-h-[300px] sm:min-h-[420px]'}`}>
-    <div className="absolute inset-0 grid-lines opacity-60" />
+    <div className="absolute inset-0 grid-lines opacity-30" />
     <div className="absolute left-4 top-4 z-10 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[.18em] text-muted-foreground"><span className="size-1.5 animate-pulse-soft bg-primary" />Live city model</div>
     <svg viewBox="0 0 560 420" className="city-svg relative z-[1]" role="img" aria-label="Interactive abstract city map">
       <path className="water" d="M0 330 C 90 290, 144 350, 225 335 S 390 310, 560 350 L560 420 L0 420Z" />
@@ -217,8 +217,7 @@ function CityMap({ active = [], onSelect, compact = false }: { active?: District
       <path className="artery" d="M30 345 C 135 275, 214 300, 280 180 S 430 100, 540 42" />
       <path className="artery" d="M50 50 C 175 125, 175 240, 287 260 S 420 270, 510 380" />
       {districts.map(({ key, points }) => <g key={key} onClick={() => onSelect?.(key)} className={onSelect ? 'cursor-pointer' : ''}><polygon points={points} className={`district-fill ${active.includes(key) ? 'active' : ''}`} /><text x={key === 'signal' ? 138 : key === 'workshop' ? 320 : key === 'commons' ? 128 : 337} y={key === 'signal' ? 93 : key === 'workshop' ? 142 : key === 'commons' ? 230 : 304} fill={active.includes(key) ? '#f4b94e' : 'rgba(234,230,213,.72)'} fontSize="9" fontFamily="DM Mono" textAnchor="middle" letterSpacing="1">{districtData[key].name.toUpperCase()}</text></g>)}
-      {Array.from({ length: 50 }, (_, i) => { const x = 34 + ((i * 83) % 470); const y = 32 + ((i * 47) % 345); return <rect key={i} className="block" x={x} y={y} width={4 + (i % 4) * 2} height={4 + (i % 5) * 2} />; })}
-      {Array.from({ length: 24 }, (_, i) => { const x = 64 + ((i * 97) % 430); const y = 44 + ((i * 61) % 320); return <circle key={`w${i}`} className="window" cx={x} cy={y} r={i % 3 === 0 ? 2 : 1.3} opacity={active.length ? .8 : .48} />; })}
+      {Array.from({ length: 18 }, (_, i) => { const x = 34 + ((i * 83) % 470); const y = 32 + ((i * 47) % 345); return <rect key={i} className="block" x={x} y={y} width={4 + (i % 3) * 2} height={4 + (i % 4) * 2} />; })}
     </svg>
     <div className="absolute bottom-4 left-4 z-10 flex items-center gap-3 font-mono text-[9px] uppercase tracking-[.15em] text-muted-foreground"><span className="flex items-center gap-1.5"><i className="size-1.5 rounded-full bg-primary" />activity</span><span className="flex items-center gap-1.5"><i className="size-1.5 rounded-full bg-secondary" />structure</span></div>
   </div>;
@@ -358,9 +357,9 @@ function Home() {
   }, []);
   return <div className="noise"><ScrollProgress /><SiteHeader /><main>
     <section className="relative overflow-hidden">
-      <div className="absolute inset-0 grid-lines opacity-25" />
-      <div ref={heroGlowRef} className="hero-glow animate-gradient-drift -top-20 -left-20 size-[420px] bg-[#f4b94e]/20" />
-      <div className="hero-glow animate-gradient-drift [animation-delay:6s] -right-32 top-40 size-[380px] bg-[#4bb5a9]/15" />
+      <div className="absolute inset-0 grid-lines opacity-15" />
+      <div ref={heroGlowRef} className="hero-glow animate-gradient-drift -top-20 -left-20 size-[420px] bg-[#f4b94e]/10" />
+      <div className="hero-glow animate-gradient-drift [animation-delay:6s] -right-32 top-40 size-[380px] bg-[#4bb5a9]/8" />
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 pb-14 pt-10 sm:gap-10 sm:px-8 sm:pb-16 sm:pt-14 md:grid-cols-[.9fr_1.1fr] md:gap-8 md:pb-24 md:pt-24">
         <div className="relative z-10 animate-rise"><SectionLabel>Public activity, made legible</SectionLabel><h1 className="font-display max-w-xl text-[clamp(3.2rem,8vw,7rem)] font-bold leading-[.9] tracking-[-.07em] text-balance">Your work is already a <span className="shimmer-text">city.</span></h1><p className="mt-7 max-w-md text-base leading-7 text-muted-foreground sm:text-lg">URBANOVA turns the things you build in public into a living, explorable world. See the signal. Find the shape. Keep moving.</p><div className="mt-8 flex flex-wrap items-center gap-3"><MagneticButton href="/demo" testId="link-hero-demo">Explore a sample city <ArrowUpRight size={15} /></MagneticButton><MagneticButton href="/how-to" testId="link-hero-how-to" variant="ghost">Read the field guide <ChevronRight size={15} /></MagneticButton></div><div className="mt-7 flex flex-wrap items-center gap-2.5" aria-label="Mobile apps coming soon"><StoreBadge store="apple" /><StoreBadge store="google" /></div><div className="mt-10 flex items-center gap-4 border-t border-border/70 pt-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><span className="text-foreground">01</span><span className="h-px w-12 bg-border" />A map, not a feed</div></div>
           <div className="city-canvas-shell relative min-h-[430px] animate-rise [animation-delay:120ms] sm:min-h-[470px] md:min-h-[540px]"><div className="absolute -inset-12 bg-[radial-gradient(circle,rgba(244,185,78,.13),transparent_55%)]" /><UrbanovaCityPreview /><div ref={cityHealthRef} className="absolute -bottom-3 right-2 z-20 border border-primary/40 bg-[#12172a]/90 px-3 py-2.5 backdrop-blur-md sm:px-4 sm:py-3 animate-glow-pulse"><div className="font-mono text-[8px] uppercase tracking-[.15em] text-primary">City health</div><div className="mt-1 flex items-end gap-2"><span className="font-display text-2xl font-semibold sm:text-3xl">{healthValue.toFixed(1)}</span><span className="mb-1 font-mono text-[9px] text-muted-foreground sm:text-[10px]">/ 100</span></div></div></div>
