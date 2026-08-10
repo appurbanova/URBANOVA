@@ -51,10 +51,10 @@ function saveSession(_user: User) { /* deprecated: auth now handled by Supabase 
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
-    <Link href="/" className="flex items-center gap-3 group" data-testid="link-logo">
+    <Link href="/" className="logo-motion flex items-center gap-3 group" data-testid="link-logo">
       <span className="brand-mark relative grid size-8 place-items-center border transition-transform duration-500 group-hover:rotate-45">
-        <span className="brand-mark-core size-2.5" />
-        <span className="brand-mark-frame absolute inset-1.5 border" />
+        <span className="brand-mark-core size-2.5" aria-hidden="true" />
+        <span className="brand-mark-frame absolute inset-1.5 border" aria-hidden="true" />
       </span>
       {!compact && <span className="brand-wordmark font-display text-[1.05rem] font-bold tracking-[.2em]">URBANOVA</span>}
     </Link>

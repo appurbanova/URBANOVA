@@ -147,6 +147,28 @@
 .brand-mark-frame { border-color: rgba(234,230,213,.38); }
 .brand-wordmark { background: linear-gradient(105deg, #f4b94e, #e4786d 34%, #eae6d5 53%, #9b8ad6 75%, #4bb5a9); background-size: 160% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
+@keyframes logo-mark-drift {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(180deg) translateY(-2px); }
+}
+@keyframes logo-core-breathe {
+  0%, 100% { transform: scale(.82); opacity: .78; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+@keyframes logo-word-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.logo-motion .brand-mark { animation: logo-mark-drift 8s ease-in-out infinite; }
+.logo-motion .brand-mark-core { animation: logo-core-breathe 2.8s ease-in-out infinite; }
+.logo-motion .brand-wordmark { animation: logo-word-shimmer 5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .logo-motion .brand-mark,
+  .logo-motion .brand-mark-core,
+  .logo-motion .brand-wordmark { animation: none; }
+}
+
+
 .parallax-slow { will-change: transform; }
 .parallax-mid { will-change: transform; }
 
