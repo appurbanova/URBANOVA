@@ -30,7 +30,7 @@ The first product surface is a frontend-first demo so the core experience works 
 | Command center (dashboard) | Shipped | Private dashboard with city health, active districts, and signals |
 | Product education pages | Shipped | About, How it works, Roadmap, Community |
 | Legal center | Shipped | Privacy, Terms, Cookies, and local-storage controls |
-| Mint NFT URBANOVA | Shipped | Live with market listing confirmed on Orynth.dev DEX |
+| Mint NFT URBANOVA | Shipped | Live with market listing confirmed on EasyA Kickstart |
 
 ### Districts
 
@@ -47,7 +47,7 @@ Building the city in public. A monthly view of the places, tools, and rituals co
 
 | Month | Milestone | Status |
 | --- | --- | --- |
-| AUG 2026 | **Foundations Live** — landing page, 3D city demo, GitHub signal integration, city health model, Mint NFT live on Orynth.dev | Shipped |
+| AUG 2026 | **Foundations Live** — landing page, 3D city demo, GitHub signal integration, city health model, Mint NFT live on EasyA Kickstart | Shipped |
 | SEP 2026 | **Games & Playable Districts** — playable mini-games inside districts, reward-earning quests tied to builder activity, gamified signals | In the works |
 | OCT 2026 | **Onchain & Wallet Access** — full on-chain layer, wallet login, NFT-gated district customization, on-chain city ownership records, multi-source activity feeds, cross-district navigation | In the works |
 | NOV 2026 | **Exchange & Civic Layer** — URBANOVA Exchange with deeper DEX integration, token trading pairs, liquidity features, civic context layer, NFT marketplace | In the works |

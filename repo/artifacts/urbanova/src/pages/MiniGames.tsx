@@ -181,7 +181,7 @@ function ArchitectureBlock() {
 
 function RoadmapAlignment() {
   const months: [string, string, string, boolean, string][] = [
-    ['AUG 2026', 'Foundations', 'Landing page live at urbanova.app, listing on Orynth.dev, Mint NFT City Urbanova, and the first readable health model.', true, ''],
+    ['AUG 2026', 'Foundations', 'Landing page live at urbanova.app, listing on EasyA Kickstart, Mint NFT City Urbanova, and the first readable health model.', true, ''],
     ['SEP 2026', 'Districts', 'Four districts online with deeper source connections and on-chain city ownership.', true, 'Signal Rush + District Builder go live'],
     ['OCT 2026', 'Wayfinding', 'A clearer route through your city, with stronger links between a signal and its source.', false, 'Wayfinder enters preview'],
     ['NOV 2026', 'Civic layer', 'Shared spaces for builders to leave context, notes, and invitations, plus a marketplace for city NFTs.', false, 'Civic Signal + score minting'],

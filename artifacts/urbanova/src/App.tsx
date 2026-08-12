@@ -100,8 +100,8 @@ export function Footer() {
     <div className="mx-auto flex max-w-7xl flex-col gap-7 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
       <div><Logo /><p className="mt-4 max-w-xs font-mono text-[10px] leading-5 tracking-[.08em] text-muted-foreground">A living map for the work you put into the world.</p></div>
       <div className="flex flex-wrap gap-x-6 gap-y-3 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link href="/legal" data-testid="link-footer-legal" className="hover:text-primary">Legal center</Link><Link href="/privacy" data-testid="link-footer-privacy" className="hover:text-primary">Privacy</Link><Link href="/terms" data-testid="link-footer-terms" className="hover:text-primary">Terms</Link><Link href="/cookies" data-testid="link-footer-cookies" className="hover:text-primary">Cookies</Link><Link href="/about" data-testid="link-footer-about" className="hover:text-primary">About</Link><Link href="/community" data-testid="link-footer-community" className="hover:text-primary">Community</Link><a href="https://github.com/appurbanova/URBANOVA" target="_blank" rel="noreferrer" data-testid="link-footer-github" className="flex items-center gap-2 hover:text-primary">Source <Github size={13} /></a></div>
-      <a href="https://orynth.dev/projects/urbanova" target="_blank" rel="noopener" className="mt-1 inline-block opacity-80 transition-opacity hover:opacity-100" aria-label="Featured on Orynth">
-        <img src="https://orynth.dev/api/badge/urbanova?theme=light&style=default" alt="Featured on Orynth" width="130" height="40" className="block" />
+      <a href="https://kickstart.easya.io/" target="_blank" rel="noopener" className="mt-1 inline-flex items-center gap-2 border border-primary/50 bg-primary/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary opacity-90 transition-opacity hover:opacity-100" aria-label="Featured on EasyA Kickstart">
+        <span className="size-1.5 rounded-full bg-primary" />Featured on EasyA Kickstart
       </a>
     </div>
   </footer>;
@@ -404,7 +404,7 @@ function ActivityTicker() {
     { icon: '◆', text: 'New release · urbanova/city-core v2.1', color: '#f4b94e' },
     { icon: '●', text: '8 contributions merged into Workshop Row', color: '#4bb5a9' },
     { icon: '▲', text: 'Mint NFT City Urbanova is live', color: '#e4786d' },
-    { icon: '◆', text: 'Listing confirmed on Orynth.dev', color: '#9b8ad6' },
+    { icon: '◆', text: 'Listing confirmed on EasyA Kickstart', color: '#9b8ad6' },
     { icon: '●', text: '126 visitors explored the Commons', color: '#f4b94e' },
     { icon: '▲', text: 'New field guide published — “Open systems”', color: '#4bb5a9' },
   ];
@@ -835,7 +835,7 @@ function HowTo() {
 
 function Roadmap() {
   const months = [
-    ['AUG 2026', 'Foundations Live', 'Landing page live at urbanova.app with pastel gradient branding, interactive 3D city demo, GitHub public signal integration, and the first readable city health model. Mint NFT URBANOVA is now live, with the official market listing confirmed on Orynth.dev including the integrated DEX for early trading.', true],
+    ['AUG 2026', 'Foundations Live', 'Landing page live at urbanova.app with pastel gradient branding, interactive 3D city demo, GitHub public signal integration, and the first readable city health model. Mint NFT URBANOVA is now live, with the official market listing confirmed on EasyA Kickstart including the integrated launchpad for early trading.', true],
     ['SEP 2026', 'Games & Playable Districts', 'URBANOVA Games comes online: playable mini-games inside the city districts, reward-earning quests tied to builder activity, and the first gamified signals that turn public work into interactive experiences.', false],
     ['OCT 2026', 'Onchain & Wallet Access', 'Full on-chain layer with wallet login, NFT-gated district customization, on-chain city ownership records, multi-source activity feeds beyond GitHub, and cross-district navigation linking signals back to their sources.', false],
     ['NOV 2026', 'Exchange & Civic Layer', 'URBANOVA Exchange launches with deeper DEX integration, token trading pairs, and liquidity features alongside a civic layer where builders leave context, notes, and invitations. A marketplace for trading city NFTs goes live.', false],

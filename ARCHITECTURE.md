@@ -197,7 +197,7 @@ lib/
 
 Architecture notes:
 
-- URBANOVA Exchange integrates with the Orynth.dev DEX (already listed) for deeper trading pairs and liquidity.
+- URBANOVA Exchange integrates with the EasyA Kickstart launchpad (already listed) for deeper trading pairs and liquidity.
 - The civic layer is a server-backed feature: builders leave context, notes, and invitations that persist across sessions. This is the first feature that requires the database for writes, not just reads.
 - The NFT marketplace for trading city NFTs uses the on-chain ownership records from October as its source of truth.
 - OpenAPI spec extends to cover exchange and civic endpoints; Orval regenerates the React Query hooks and Zod schemas.
