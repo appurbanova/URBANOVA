@@ -301,7 +301,7 @@ export function AgenticPassSection() {
       ? `When the gates open, the first ${FREE_SUPPLY} passes are free — one per wallet. After that, minting continues until the city is full.`
       : freeRemaining > 0
         ? `The gates are open and the free phase is live: ${freeRemaining} of the first ${FREE_SUPPLY} free passes remain — one per wallet. After that, minting continues until the city is full.`
-        : 'The free phase is complete — all 333 genesis passes were claimed. Minting is now in the Agentic phase, and continues until the city is full.';
+        : 'The free phase is complete — all 333 genesis passes were claimed. Minting is now in the Agentic phase: each mint costs just a few cents — a small anti-bot toll, shown exactly in your wallet before you sign — and minting continues until the city is full.';
 
   const runCheck = async () => {
     const address = walletInput.trim();
