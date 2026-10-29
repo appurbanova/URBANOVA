@@ -301,7 +301,7 @@ export function AgenticPassSection() {
       ? `When the gates open, the first ${FREE_SUPPLY} passes are free — one per wallet. After that, minting continues until the city is full.`
       : freeRemaining > 0
         ? `The gates are open and the free phase is live: ${freeRemaining} of the first ${FREE_SUPPLY} free passes remain — one per wallet. After that, minting continues until the city is full.`
-        : 'The free phase is complete — all 333 genesis passes were claimed. Minting is now in the Agentic phase: each mint costs just a few cents — a small anti-bot toll, shown exactly in your wallet before you sign — and minting continues until the city is full.';
+        : 'The free phase is complete — all 333 OG passes were claimed. Minting is now in the Agentic phase, and the pass itself is still free: the few cents charged are only an anti-bot filter, shown exactly in your wallet before you sign. Minting continues until the city is full.';
 
   const runCheck = async () => {
     const address = walletInput.trim();
@@ -383,13 +383,13 @@ export function AgenticPassSection() {
             <div className="mt-2 h-1.5 overflow-hidden bg-muted"><div className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-1000 ease-out" style={{ width: `${progress}%` }} /></div>
             <div className="mt-4">
               <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-[.15em] text-muted-foreground">
-                <span>Genesis free phase</span>
+                <span>Genesis free phase · the OG 333</span>
                 <span className={freeRemaining === 0 ? 'text-secondary' : ''}>{freeRemaining === 0 ? `Complete · ${FREE_SUPPLY} / ${FREE_SUPPLY}` : `${freeMinted} / ${FREE_SUPPLY} · ${freeRemaining} left`}</span>
               </div>
               <div className="mt-1.5 h-1 overflow-hidden bg-muted"><div className="h-full bg-secondary transition-all duration-1000 ease-out" style={{ width: `${freeProgress}%` }} /></div>
             </div>
             {paidMinted > 0 && (
-              <p className="mt-3 font-mono text-[9px] uppercase tracking-[.15em] text-muted-foreground">Agentic phase · {paidMinted.toLocaleString('en-US')} minted so far</p>
+              <p className="mt-3 font-mono text-[9px] uppercase tracking-[.15em] text-muted-foreground">Agentic phase · {paidMinted.toLocaleString('en-US')} minted · mint is free — few-cents anti-bot filter only</p>
             )}
           </div>
           {recentMints.length > 0 && (
@@ -452,7 +452,7 @@ export function AgenticPassSection() {
             {[
               ['01', 'Hold an Agent ID', 'Claim it free in the Binance app, under your Agentic Wallet. The contract checks it before anything else.'],
               ['02', 'Call mint()', 'One call, no arguments. Read currentPrice() and send exactly that — your wallet shows the value before you sign.'],
-              ['03', 'Your pass is struck', 'One transaction mints one pass. The first 333 are free — one per wallet — then minting continues until the city is full.'],
+              ['03', 'Your pass is struck', 'One transaction mints one pass. The first 333 — the OG passes — are free, one per wallet. After that the pass stays free too; the few cents are only an anti-bot filter.'],
             ].map(([num, title, body]) => (
               <div key={num} className="border-t border-border/70 pt-4">
                 <div className="font-mono text-[10px] tracking-[.18em] text-primary">{num}</div>
