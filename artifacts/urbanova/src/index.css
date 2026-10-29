@@ -447,3 +447,18 @@
   .hero-word { opacity: 1 !important; }
   .city-tilt-wrap, .city-tilt-inner { transform: none !important; }
 }
+
+/* --- Agentic Pass live mint feedback --- */
+
+@keyframes mint-flash {
+  0% { box-shadow: 0 0 0 0 rgba(75,181,169,.35); }
+  100% { box-shadow: 0 0 0 16px rgba(75,181,169,0); }
+}
+.animate-mint-flash { animation: mint-flash 1.2s ease-out; }
+
+@keyframes count-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.animate-count-pop { animation: count-pop .6s cubic-bezier(.22,1,.36,1); }

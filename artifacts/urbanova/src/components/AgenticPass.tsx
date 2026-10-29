@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ArrowUpRight, Search } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowUpRight, Check, Copy, Search } from 'lucide-react';
 
 /**
  * URBANOVA Agentic Pass (UAP) — section NFT khusus Binance Agentic Wallet.
@@ -111,6 +111,122 @@ async function readWalletCheck(address: string): Promise<WalletCheck> {
   };
 }
 
+const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const ZERO_TOPIC = `0x${'0'.repeat(64)}`;
+
+type RecentMint = {
+  tokenId: number;
+  to: string;
+  block: number;
+  logIndex: number;
+};
+
+async function rpcJson(method: string, params: unknown[]): Promise<unknown> {
+  let lastError: unknown = null;
+  for (const endpoint of RPC_ENDPOINTS) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+      });
+      const json = (await response.json()) as { result?: unknown; error?: unknown };
+      if (json.result !== undefined && json.result !== null) return json.result;
+      lastError = json.error ?? new Error('empty result');
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('RPC unavailable');
+}
+
+/** Mint terbaru dibaca dari event Transfer (from = alamat nol) kontrak UAP. */
+async function fetchRecentMints(limit = 8): Promise<RecentMint[]> {
+  const latest = Number(BigInt((await rpcJson('eth_blockNumber', [])) as string));
+  const found: RecentMint[] = [];
+  const CHUNK = 2000;
+  for (let end = latest; end > 0 && found.length < limit; end -= CHUNK) {
+    const start = Math.max(0, end - CHUNK + 1);
+    const logs = (await rpcJson('eth_getLogs', [{
+      address: CONTRACT,
+      fromBlock: `0x${start.toString(16)}`,
+      toBlock: `0x${end.toString(16)}`,
+      topics: [TRANSFER_TOPIC, ZERO_TOPIC],
+    }])) as Array<{ topics: string[]; blockNumber: string; logIndex: string }>;
+    for (const log of logs) {
+      if (log.topics.length >= 4) {
+        found.push({
+          tokenId: Number(BigInt(log.topics[3])),
+          to: `0x${log.topics[2].slice(26)}`,
+          block: Number(BigInt(log.blockNumber)),
+          logIndex: Number(BigInt(log.logIndex)),
+        });
+      }
+    }
+  }
+  found.sort((a, b) => b.block - a.block || b.logIndex - a.logIndex);
+  return found.slice(0, limit);
+}
+
+function shortAddress(address: string): string {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
+}
+
+/** Angka yang bergerak halus menuju nilai baru (untuk counter live). */
+function useAnimatedNumber(value: number, duration = 900): number {
+  const [display, setDisplay] = useState(value);
+  const fromRef = useRef(value);
+  useEffect(() => {
+    const from = fromRef.current;
+    if (from === value) {
+      setDisplay(value);
+      return;
+    }
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(from + (value - from) * eased));
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        fromRef.current = value;
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      fromRef.current = value;
+    };
+  }, [value, duration]);
+  return display;
+}
+
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard tidak tersedia; teks tetap bisa dipilih manual */
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={onCopy}
+      aria-label={label}
+      className="absolute right-2 top-2 z-10 flex items-center gap-1.5 border border-border/70 bg-[#0d1120]/90 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[.14em] text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
+    >
+      {copied ? <Check size={12} /> : <Copy size={12} />}
+      {copied ? 'Copied' : 'Copy'}
+    </button>
+  );
+}
+
 export function AgenticMarketSection() {
   return (
     <section id="agentic-market" data-testid="section-agentic-market" className="border-t border-border/60 bg-[#0d1120]">
@@ -156,10 +272,14 @@ export function AgenticMarketSection() {
 
 export function AgenticPassSection() {
   const [chain, setChain] = useState<ChainState | null>(null);
+  const [recentMints, setRecentMints] = useState<RecentMint[]>([]);
+  const [justMinted, setJustMinted] = useState(0);
   const [walletInput, setWalletInput] = useState('');
   const [check, setCheck] = useState<WalletCheck | null>(null);
   const [checkBusy, setCheckBusy] = useState(false);
   const [checkError, setCheckError] = useState('');
+  const prevMintedRef = useRef<number | null>(null);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -169,16 +289,53 @@ export function AgenticPassSection() {
     }
   }, []);
 
+  const refreshMints = useCallback(async () => {
+    try {
+      setRecentMints(await fetchRecentMints());
+    } catch {
+      /* feed mint terbaru bersifat pelengkap; abaikan kegagalan RPC */
+    }
+  }, []);
+
   useEffect(() => {
     void refresh();
-    const timer = setInterval(() => void refresh(), 20000);
-    return () => clearInterval(timer);
-  }, [refresh]);
+    void refreshMints();
+    const stateTimer = setInterval(() => void refresh(), 15000);
+    const mintsTimer = setInterval(() => void refreshMints(), 60000);
+    return () => {
+      clearInterval(stateTimer);
+      clearInterval(mintsTimer);
+    };
+  }, [refresh, refreshMints]);
+
+  useEffect(() => {
+    if (!chain) return;
+    const prev = prevMintedRef.current;
+    prevMintedRef.current = chain.totalMinted;
+    if (prev !== null && chain.totalMinted > prev) {
+      setJustMinted(chain.totalMinted - prev);
+      void refreshMints();
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+      flashTimerRef.current = setTimeout(() => setJustMinted(0), 6000);
+    }
+  }, [chain, refreshMints]);
 
   const totalMinted = chain?.totalMinted ?? 0;
   const mintOpen = chain?.mintOpen ?? false;
   const soldOut = totalMinted >= MAX_SUPPLY;
   const progress = Math.min(100, (totalMinted / MAX_SUPPLY) * 100);
+  const animatedMinted = useAnimatedNumber(totalMinted);
+  const freeMinted = Math.min(totalMinted, FREE_SUPPLY);
+  const freeProgress = (freeMinted / FREE_SUPPLY) * 100;
+  const freeRemaining = FREE_SUPPLY - freeMinted;
+  const paidMinted = Math.max(0, totalMinted - FREE_SUPPLY);
+  const phaseText = soldOut
+    ? 'The city is full — every pass has been struck.'
+    : !mintOpen
+      ? `When the gates open, the first ${FREE_SUPPLY} passes are free — one per wallet. After that, minting continues until the city is full.`
+      : freeRemaining > 0
+        ? `The gates are open and the free phase is live: ${freeRemaining} of the first ${FREE_SUPPLY} free passes remain — one per wallet. After that, minting continues until the city is full.`
+        : 'The free phase is complete — all 333 genesis passes were claimed. Minting is now in the Agentic phase, and continues until the city is full.';
 
   const runCheck = async () => {
     const address = walletInput.trim();
@@ -206,11 +363,11 @@ export function AgenticPassSection() {
       : { label: 'Coming soon', className: 'border-primary/50 text-primary' };
 
   return (
-    <section id="agentic-pass" data-testid="section-agentic-pass" className="home-reveal border-t border-border/60 bg-[#0d1120]">
+    <section id="agentic-pass" data-testid="section-agentic-pass" className="home-reveal scroll-mt-24 border-t border-border/60 bg-[#0d1120]">
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-16 sm:px-8 md:grid-cols-2 md:py-24">
-        <div className="relative">
-          <div className="overflow-hidden border border-border/70">
-            <img src="/uap-city.webp" alt="URBANOVA Agentic Pass artwork — a minimal gold line drawing of the city's gate district" className="block aspect-square w-full object-cover" loading="lazy" />
+        <div className="group relative">
+          <div className="animate-glow-pulse overflow-hidden border border-border/70">
+            <img src="/uap-city.webp" alt="URBANOVA Agentic Pass artwork — a minimal gold line drawing of the city's gate district" className="block aspect-square w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]" loading="lazy" />
           </div>
           <div className="mt-3 flex items-center justify-between font-mono text-[9px] uppercase tracking-[.18em] text-muted-foreground">
             <span>Pass artwork · The Golden Gate district</span>
@@ -223,30 +380,64 @@ export function AgenticPassSection() {
           <p className="mt-5 max-w-lg leading-7 text-muted-foreground">
             A pass struck for the people building this city, minted <span className="text-foreground">only by Binance Agentic Wallets holding an Agent ID</span> —
             the contract checks the SPACE ID Agent ID on-chain before anything else, and turns every other caller away.
-            When the gates open, the first {FREE_SUPPLY} passes are free — one per wallet. After that, minting continues until the city is full.
+            {phaseText}
           </p>
           <p className="mt-4 max-w-lg leading-7 text-muted-foreground">
             There is no wallet to connect here. Minting happens through your own agent — give it the prompt below and it does the rest.
           </p>
           <div className="mt-7 grid max-w-lg grid-cols-3 gap-3">
-            {[
-              ['Supply', MAX_SUPPLY.toLocaleString('en-US')],
-              ['Free mint', String(FREE_SUPPLY)],
-              ['Chain', 'BNB Chain'],
-            ].map(([label, value]) => (
-              <div key={label} className="border border-border/70 bg-card/50 px-3 py-3">
-                <div className="font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground">{label}</div>
-                <div className="mt-1 font-display text-lg font-semibold">{value}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 max-w-lg">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground">
-              <span>{totalMinted.toLocaleString('en-US')} / {MAX_SUPPLY.toLocaleString('en-US')} minted</span>
-              <span className={`border px-2 py-1 ${chip.className}`}>{chip.label}</span>
+            <div className="border border-border/70 bg-card/50 px-3 py-3">
+              <div className="font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground">Supply</div>
+              <div className="mt-1 font-display text-lg font-semibold">{MAX_SUPPLY.toLocaleString('en-US')}</div>
             </div>
-            <div className="mt-2 h-1 bg-muted"><div className="h-full bg-primary transition-all duration-700" style={{ width: `${progress}%` }} /></div>
+            <div className="border border-border/70 bg-card/50 px-3 py-3">
+              <div className="font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground">Free mint</div>
+              <div className="mt-1 font-display text-lg font-semibold">{FREE_SUPPLY}</div>
+            </div>
+            <div className="border border-border/70 bg-card/50 px-3 py-3">
+              <div className="font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground">Minted</div>
+              <div className="mt-1 font-display text-lg font-semibold text-primary">{animatedMinted.toLocaleString('en-US')}</div>
+            </div>
           </div>
+          <div className={`mt-6 max-w-lg ${justMinted > 0 ? 'animate-mint-flash' : ''}`}>
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground">
+              <span>{animatedMinted.toLocaleString('en-US')} / {MAX_SUPPLY.toLocaleString('en-US')} minted · {progress.toFixed(1)}%</span>
+              <span className="flex items-center gap-2">
+                {justMinted > 0 && <span className="animate-count-pop border border-secondary/60 px-2 py-1 text-secondary">+{justMinted} new</span>}
+                <span className={`flex items-center gap-2 border px-2 py-1 ${chip.className}`}>
+                  {mintOpen && !soldOut && (
+                    <span className="relative inline-block h-1.5 w-1.5 rounded-full bg-current">
+                      <span className="pulse-ring" />
+                    </span>
+                  )}
+                  {chip.label}
+                </span>
+              </span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden bg-muted"><div className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-1000 ease-out" style={{ width: `${progress}%` }} /></div>
+            <div className="mt-4">
+              <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-[.15em] text-muted-foreground">
+                <span>Genesis free phase</span>
+                <span className={freeRemaining === 0 ? 'text-secondary' : ''}>{freeRemaining === 0 ? `Complete · ${FREE_SUPPLY} / ${FREE_SUPPLY}` : `${freeMinted} / ${FREE_SUPPLY} · ${freeRemaining} left`}</span>
+              </div>
+              <div className="mt-1.5 h-1 overflow-hidden bg-muted"><div className="h-full bg-secondary transition-all duration-1000 ease-out" style={{ width: `${freeProgress}%` }} /></div>
+            </div>
+            {paidMinted > 0 && (
+              <p className="mt-3 font-mono text-[9px] uppercase tracking-[.15em] text-muted-foreground">Agentic phase · {paidMinted.toLocaleString('en-US')} minted so far</p>
+            )}
+          </div>
+          {recentMints.length > 0 && (
+            <div className="mt-6 max-w-lg">
+              <div className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">Recent mints</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {recentMints.map((mint) => (
+                  <span key={`${mint.block}-${mint.logIndex}`} className="animate-rise border border-border/70 bg-card/50 px-2.5 py-1.5 font-mono text-[10px] tracking-[.08em] text-foreground/85">
+                    Pass #{mint.tokenId} <span className="text-muted-foreground">→ {shortAddress(mint.to)}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="mt-7 max-w-lg">
             <div className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">Check a wallet</div>
             <div className="mt-2 flex">
@@ -307,11 +498,17 @@ export function AgenticPassSection() {
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <div>
               <div className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">Prompt for your agent</div>
-              <pre className="mt-2 overflow-x-auto whitespace-pre-wrap border border-border/70 bg-[#0b1020] p-4 font-mono text-[11px] leading-5 text-foreground/90">{AGENT_PROMPT}</pre>
+              <div className="relative mt-2">
+                <CopyButton text={AGENT_PROMPT} label="Copy prompt for your agent" />
+                <pre className="overflow-x-auto whitespace-pre-wrap border border-border/70 bg-[#0b1020] p-4 pt-10 font-mono text-[11px] leading-5 text-foreground/90">{AGENT_PROMPT}</pre>
+              </div>
             </div>
             <div>
               <div className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">baw CLI</div>
-              <pre className="mt-2 overflow-x-auto whitespace-pre-wrap border border-border/70 bg-[#0b1020] p-4 font-mono text-[11px] leading-5 text-foreground/90">{AGENT_CLI}</pre>
+              <div className="relative mt-2">
+                <CopyButton text={AGENT_CLI} label="Copy baw CLI commands" />
+                <pre className="overflow-x-auto whitespace-pre-wrap border border-border/70 bg-[#0b1020] p-4 pt-10 font-mono text-[11px] leading-5 text-foreground/90">{AGENT_CLI}</pre>
+              </div>
             </div>
           </div>
           <p className="mt-6 text-xs leading-5 text-muted-foreground">
