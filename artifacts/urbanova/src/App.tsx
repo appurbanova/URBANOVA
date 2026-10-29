@@ -13,6 +13,7 @@ import NotFound from '@/pages/not-found';
 import MiniGames from '@/pages/mini-games';
 import { Urbanova3D } from '@/components/Urbanova3D';
 import { UrbanovaCityPreview } from '@/components/UrbanovaCityPreview';
+import { AgenticPassSection } from '@/components/AgenticPass';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/lib/supabase';
 
@@ -100,8 +101,8 @@ export function Footer() {
     <div className="mx-auto flex max-w-7xl flex-col gap-7 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
       <div><Logo /><p className="mt-4 max-w-xs font-mono text-[10px] leading-5 tracking-[.08em] text-muted-foreground">A living map for the work you put into the world.</p></div>
       <div className="flex flex-wrap gap-x-6 gap-y-3 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link href="/legal" data-testid="link-footer-legal" className="hover:text-primary">Legal center</Link><Link href="/privacy" data-testid="link-footer-privacy" className="hover:text-primary">Privacy</Link><Link href="/terms" data-testid="link-footer-terms" className="hover:text-primary">Terms</Link><Link href="/cookies" data-testid="link-footer-cookies" className="hover:text-primary">Cookies</Link><Link href="/about" data-testid="link-footer-about" className="hover:text-primary">About</Link><Link href="/community" data-testid="link-footer-community" className="hover:text-primary">Community</Link><a href="https://github.com/appurbanova/URBANOVA" target="_blank" rel="noreferrer" data-testid="link-footer-github" className="flex items-center gap-2 hover:text-primary">Source <Github size={13} /></a></div>
-      <a href="https://kickstart.easya.io/" target="_blank" rel="noopener" className="mt-1 inline-flex items-center gap-2 border border-primary/50 bg-primary/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary opacity-90 transition-opacity hover:opacity-100" aria-label="Featured on EasyA Kickstart">
-        <span className="size-1.5 rounded-full bg-primary" />Featured on EasyA Kickstart
+      <a href="https://bscscan.com/address/0x3a8F2fE59fd461D447e239c924713B040C7a45f7" target="_blank" rel="noopener" className="mt-1 inline-flex items-center gap-2 border border-primary/50 bg-primary/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary opacity-90 transition-opacity hover:opacity-100" aria-label="URBANOVA Agentic Pass — live on BNB Chain">
+        <span className="size-1.5 rounded-full bg-primary" />URBANOVA Agentic Pass · BNB Chain
       </a>
     </div>
   </footer>;
@@ -403,8 +404,8 @@ function ActivityTicker() {
   const items = [
     { icon: '◆', text: 'New release · urbanova/city-core v2.1', color: '#f4b94e' },
     { icon: '●', text: '8 contributions merged into Workshop Row', color: '#4bb5a9' },
-    { icon: '▲', text: 'Mint NFT City Urbanova is live', color: '#e4786d' },
-    { icon: '◆', text: 'Listing confirmed on EasyA Kickstart', color: '#9b8ad6' },
+    { icon: '▲', text: 'URBANOVA Agentic Pass — mint coming soon', color: '#e4786d' },
+    { icon: '◆', text: 'Exclusively for Binance Agentic Wallet', color: '#9b8ad6' },
     { icon: '●', text: '126 visitors explored the Commons', color: '#f4b94e' },
     { icon: '▲', text: 'New field guide published — “Open systems”', color: '#4bb5a9' },
   ];
@@ -590,6 +591,7 @@ function Home() {
     <ActivityTicker />
     <section className="home-reveal border-y border-border/60 bg-[#101323]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[.75fr_1.25fr] md:py-20"><div><SectionLabel>Why a city</SectionLabel><h2 className="font-display text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">A better way to read a builder.</h2></div><div className="grid gap-8 sm:grid-cols-3"><Feature icon={<Orbit size={19} />} title="Find the signal" text="A quiet layer over your public work, connecting releases, writing, and conversation." /><Feature icon={<Layers3 size={19} />} title="See the shape" text="Districts reveal patterns that a chronological feed keeps flat and easy to miss." /><Feature icon={<Compass size={19} />} title="Choose your next" text="Use the city as a personal instrument for deciding where to put your attention." /></div></div></section>
     <section className="home-reveal mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-24"><div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] md:items-end"><div><SectionLabel>Made for the open web</SectionLabel><h2 className="font-display max-w-2xl text-4xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">The public internet is a place. <span className="text-muted-foreground">URBANOVA gives it contours.</span></h2></div><div className="border-l border-primary/50 pl-5 text-sm leading-6 text-muted-foreground">No vanity metrics. No productivity theatre. Just a thoughtful surface for the work, people, and ideas you have chosen to make visible.</div></div><div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{(Object.keys(districtData) as DistrictKey[]).map((key, i) => <DistrictCard3D key={key} districtKey={key} index={i} selected={selectedDistrict === key} onSelect={() => setSelectedDistrict(key)} />)}</div><div className="mt-4 flex flex-col gap-4 border border-primary/30 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between" aria-live="polite"><div><div className="font-mono text-[9px] uppercase tracking-[.18em] text-primary">{selected.eyebrow} / selected layer</div><p className="mt-1 font-display text-xl font-semibold">{selected.name}</p><p className="mt-1 text-sm text-muted-foreground">{selected.stat} · {selected.detail}</p></div><Link href="/demo" className="inline-flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">Open the map <ArrowUpRight size={14} /></Link></div></section>
+    <AgenticPassSection />
     <section className="home-reveal border-t border-border/60 bg-primary px-5 py-14 text-primary-foreground sm:px-8 md:py-20"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[.2em] opacity-70">Start with what is already there</div><h2 className="cta-glow mt-4 max-w-xl font-display text-4xl font-bold leading-none tracking-[-.05em] sm:text-6xl">Give your work a place to live.</h2></div><Link href="/login" data-testid="link-cta-create-city" className="magnetic flex items-center gap-3 border border-primary-foreground/50 px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.15em] transition-colors hover:bg-primary-foreground hover:text-primary">Create your demo city <ArrowUpRight size={15} /></Link></div></section>
   </main><Footer /></div>;
 }
@@ -835,7 +837,7 @@ function HowTo() {
 
 function Roadmap() {
   const months = [
-    ['AUG 2026', 'Foundations Live', 'Landing page live at urbanova.app with pastel gradient branding, interactive 3D city demo, GitHub public signal integration, and the first readable city health model. Mint NFT URBANOVA is now live, with the official market listing confirmed on EasyA Kickstart including the integrated launchpad for early trading.', true],
+    ['AUG 2026', 'Foundations Live', 'Landing page live at urbanova.app with pastel gradient branding, interactive 3D city demo, GitHub public signal integration, and the first readable city health model. The URBANOVA Agentic Pass, the city’s first collectible, is deployed on BNB Chain exclusively for Binance Agentic Wallet, with mint opening soon.', true],
     ['SEP 2026', 'Games & Playable Districts', 'URBANOVA Games comes online: playable mini-games inside the city districts, reward-earning quests tied to builder activity, and the first gamified signals that turn public work into interactive experiences.', false],
     ['OCT 2026', 'Onchain & Wallet Access', 'Full on-chain layer with wallet login, NFT-gated district customization, on-chain city ownership records, multi-source activity feeds beyond GitHub, and cross-district navigation linking signals back to their sources.', false],
     ['NOV 2026', 'Exchange & Civic Layer', 'URBANOVA Exchange launches with deeper DEX integration, token trading pairs, and liquidity features alongside a civic layer where builders leave context, notes, and invitations. A marketplace for trading city NFTs goes live.', false],
