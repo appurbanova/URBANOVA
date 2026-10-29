@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /login
-Disallow: /dashboard
-Disallow: /404
-Sitemap: https://urbanova.app/sitemap.xml

@@ -30,7 +30,7 @@ The first product surface is a frontend-first demo so the core experience works 
 | Command center (dashboard) | Shipped | Private dashboard with city health, active districts, and signals |
 | Product education pages | Shipped | About, How it works, Roadmap, Community |
 | Legal center | Shipped | Privacy, Terms, Cookies, and local-storage controls |
-| URBANOVA Agentic Pass (NFT) | Shipped | ERC-721 on BNB Chain for Binance Agentic Wallets; mint gated on-chain by SPACE ID Agent ID; mint opens soon |
+| URBANOVA Agentic Pass (NFT) | Shipped | ERC-721 on BNB Chain for Binance Agentic Wallets; mint gated on-chain by SPACE ID Agent ID; mint is live |
 
 ## URBANOVA Agentic Pass
 
@@ -44,7 +44,8 @@ The city's first collectible: an ERC-721 pass on BNB Chain, minted **only by Bin
 | Gate | Caller must hold a SPACE ID Agent ID (`0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F`); contract callers are rejected |
 | Agent skill | [urbanova.app/uap-skill.md](https://urbanova.app/uap-skill.md) — machine-readable mint instructions for agents |
 | Metadata | `https://urbanova.app/metadata/<tokenId>` |
-| Status | Deployed and verified; mint currently **closed** (coming soon) until the owner opens it |
+| Status | Deployed and verified; **mint is open** — free phase first (333 passes, 1 per wallet) |
+| Source | [`contracts/UrbanovaAgenticPassV2.sol`](./contracts/UrbanovaAgenticPassV2.sol) in this repo |
 
 ### Districts
 
@@ -131,7 +132,7 @@ URBANOVA/
 │   └── db/                # Drizzle ORM schema and migrations
 ├── scripts/               # Workspace tooling and helpers
 ├── .github/workflows/     # CI/CD (GitHub Pages deploy)
-├── repo/                  # Repository meta (mirrors root for Pages tooling)
+├── contracts/             # URBANOVA Agentic Pass contract source (deployed on BNB Chain)
 ├── package.json           # Workspace root
 ├── pnpm-workspace.yaml    # Workspace + catalog config
 ├── tsconfig.base.json     # Shared TypeScript config

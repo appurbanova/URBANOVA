@@ -1,1 +1,0 @@
-- [GitHub push authorization](github-push-authorization.md) — Push ke GitHub memerlukan kredensial source-control GitHub Replit, bukan hanya remote origin.

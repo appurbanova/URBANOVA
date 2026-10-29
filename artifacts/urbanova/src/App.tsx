@@ -404,7 +404,7 @@ function ActivityTicker() {
   const items = [
     { icon: '◆', text: 'New release · urbanova/city-core v2.1', color: '#f4b94e' },
     { icon: '●', text: '8 contributions merged into Workshop Row', color: '#4bb5a9' },
-    { icon: '▲', text: 'URBANOVA Agentic Pass — mint coming soon', color: '#e4786d' },
+    { icon: '▲', text: 'URBANOVA Agentic Pass — mint is live', color: '#e4786d' },
     { icon: '◆', text: 'Exclusively for Binance Agentic Wallet', color: '#9b8ad6' },
     { icon: '●', text: '126 visitors explored the Commons', color: '#f4b94e' },
     { icon: '▲', text: 'New field guide published — “Open systems”', color: '#4bb5a9' },
@@ -837,7 +837,7 @@ function HowTo() {
 
 function Roadmap() {
   const months = [
-    ['AUG 2026', 'Foundations Live', 'Landing page live at urbanova.app with pastel gradient branding, interactive 3D city demo, GitHub public signal integration, and the first readable city health model. The URBANOVA Agentic Pass, the city’s first collectible, is deployed on BNB Chain exclusively for Binance Agentic Wallet, with mint opening soon.', true],
+    ['AUG 2026', 'Foundations Live', 'Landing page live at urbanova.app with pastel gradient branding, interactive 3D city demo, GitHub public signal integration, and the first readable city health model. The URBANOVA Agentic Pass, the city’s first collectible, is deployed on BNB Chain exclusively for Binance Agentic Wallet, with mint now live for Agent ID holders.', true],
     ['SEP 2026', 'Games & Playable Districts', 'URBANOVA Games comes online: playable mini-games inside the city districts, reward-earning quests tied to builder activity, and the first gamified signals that turn public work into interactive experiences.', false],
     ['OCT 2026', 'Onchain & Wallet Access', 'Full on-chain layer with wallet login, NFT-gated district customization, on-chain city ownership records, multi-source activity feeds beyond GitHub, and cross-district navigation linking signals back to their sources.', false],
     ['NOV 2026', 'Exchange & Civic Layer', 'URBANOVA Exchange launches with deeper DEX integration, token trading pairs, and liquidity features alongside a civic layer where builders leave context, notes, and invitations. A marketplace for trading city NFTs goes live.', false],
