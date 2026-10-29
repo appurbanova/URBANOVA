@@ -13,7 +13,7 @@ import NotFound from '@/pages/not-found';
 import MiniGames from '@/pages/mini-games';
 import { Urbanova3D } from '@/components/Urbanova3D';
 import { UrbanovaCityPreview } from '@/components/UrbanovaCityPreview';
-import { AgenticPassSection } from '@/components/AgenticPass';
+import { AgenticPassSection, AgenticMarketSection } from '@/components/AgenticPass';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/lib/supabase';
 
@@ -606,6 +606,7 @@ function Home() {
       </div>
     </section>
     <AgenticPassSection />
+    <AgenticMarketSection />
     <section className="border-t border-border/60 px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 sm:flex-row sm:items-center"><p className="max-w-md text-sm leading-6 text-muted-foreground">The city is bigger than the pass — districts, signals, and the living map live here.</p><Link href="/city" data-testid="link-home-city" className="inline-flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">Explore the city <ArrowUpRight size={14} /></Link></div></section>
   </main><Footer /></div>;
 }

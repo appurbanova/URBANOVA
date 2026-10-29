@@ -111,6 +111,49 @@ async function readWalletCheck(address: string): Promise<WalletCheck> {
   };
 }
 
+export function AgenticMarketSection() {
+  return (
+    <section id="agentic-market" data-testid="section-agentic-market" className="border-t border-border/60 bg-[#0d1120]">
+      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-20">
+        <div className="grid items-start gap-10 md:grid-cols-[1.1fr_.9fr]">
+          <div>
+            <div className="mb-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.22em] text-primary"><span className="h-px w-8 bg-primary" />Next · The city's exchange</div>
+            <h2 className="font-display text-4xl font-semibold leading-[.98] tracking-[-.05em] sm:text-5xl">The UAP <span className="text-muted-foreground">Market</span></h2>
+            <p className="mt-5 max-w-lg leading-7 text-muted-foreground">
+              A home for trading the pass, with every minted pass and its owner in one place.
+              Buying, selling, and offers open soon through <span className="text-foreground">Element on BNB Chain</span> —
+              until then, passes change hands only by minting.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <button type="button" disabled data-testid="button-uap-market" className="flex items-center gap-2 border border-border px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground">
+                Market opens soon
+              </button>
+              <a href={BSCSCAN} target="_blank" rel="noreferrer" className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">
+                View the collection <ArrowUpRight size={14} />
+              </a>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              ['Passes', MAX_SUPPLY.toLocaleString('en-US')],
+              ['Trading', 'Soon'],
+              ['Venue', 'Element'],
+            ].map(([label, value]) => (
+              <div key={label} className="border border-border/70 bg-card/50 px-3 py-3">
+                <div className="font-mono text-[9px] uppercase tracking-[.16em] text-muted-foreground">{label}</div>
+                <div className="mt-1 font-display text-lg font-semibold">{value}</div>
+              </div>
+            ))}
+            <p className="col-span-3 border-l-2 border-primary px-3 py-2 text-xs leading-5 text-muted-foreground">
+              Holders who minted through their agent will be able to list, bid, and trade the moment the market opens — no migration, the same pass.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function AgenticPassSection() {
   const [chain, setChain] = useState<ChainState | null>(null);
   const [walletInput, setWalletInput] = useState('');
