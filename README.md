@@ -30,7 +30,21 @@ The first product surface is a frontend-first demo so the core experience works 
 | Command center (dashboard) | Shipped | Private dashboard with city health, active districts, and signals |
 | Product education pages | Shipped | About, How it works, Roadmap, Community |
 | Legal center | Shipped | Privacy, Terms, Cookies, and local-storage controls |
-| Mint NFT URBANOVA | Shipped | Live with market listing confirmed on EasyA Kickstart |
+| URBANOVA Agentic Pass (NFT) | Shipped | ERC-721 on BNB Chain for Binance Agentic Wallets; mint gated on-chain by SPACE ID Agent ID; mint opens soon |
+
+## URBANOVA Agentic Pass
+
+The city's first collectible: an ERC-721 pass on BNB Chain, minted **only by Binance Agentic Wallets holding a SPACE ID Agent ID** — the gate is enforced on-chain by the contract itself, in the same pattern as NOMIO.
+
+| Item | Value |
+| --- | --- |
+| Contract | `0x4a800D4775F1c0aCAF8124422127CB7Fe3D5b959` (BNB Smart Chain, chain id 56) |
+| Supply | 3,333 — the first 333 are free (1 per wallet); the rest carry a platform commission only |
+| Mint model | Agent-driven: `mint()` (calldata `0x1249c58b`), value read from `currentPrice()`; no wallet connection on the website |
+| Gate | Caller must hold a SPACE ID Agent ID (`0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F`); contract callers are rejected |
+| Agent skill | [urbanova.app/uap-skill.md](https://urbanova.app/uap-skill.md) — machine-readable mint instructions for agents |
+| Metadata | `https://urbanova.app/metadata/<tokenId>` |
+| Status | Deployed and verified; mint currently **closed** (coming soon) until the owner opens it |
 
 ### Districts
 
@@ -47,7 +61,7 @@ Building the city in public. A monthly view of the places, tools, and rituals co
 
 | Month | Milestone | Status |
 | --- | --- | --- |
-| AUG 2026 | **Foundations Live** — landing page, 3D city demo, GitHub signal integration, city health model, Mint NFT live on EasyA Kickstart | Shipped |
+| AUG 2026 | **Foundations Live** — landing page, 3D city demo, GitHub signal integration, city health model, URBANOVA Agentic Pass contract live on BNB Chain | Shipped |
 | SEP 2026 | **Games & Playable Districts** — playable mini-games inside districts, reward-earning quests tied to builder activity, gamified signals | In the works |
 | OCT 2026 | **Onchain & Wallet Access** — full on-chain layer, wallet login, NFT-gated district customization, on-chain city ownership records, multi-source activity feeds, cross-district navigation | In the works |
 | NOV 2026 | **Exchange & Civic Layer** — URBANOVA Exchange with deeper DEX integration, token trading pairs, liquidity features, civic context layer, NFT marketplace | In the works |

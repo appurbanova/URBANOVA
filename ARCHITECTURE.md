@@ -197,7 +197,7 @@ lib/
 
 Architecture notes:
 
-- URBANOVA Exchange integrates with the EasyA Kickstart launchpad (already listed) for deeper trading pairs and liquidity.
+- The URBANOVA Agentic Pass (ERC-721, BNB Chain) is minted only through Binance Agentic Wallets holding a SPACE ID Agent ID, enforced on-chain by the pass contract (`0x4a800D4775F1c0aCAF8124422127CB7Fe3D5b959`). The website carries no wallet connection; minting is agent-driven via the published skill at urbanova.app/uap-skill.md.
 - The civic layer is a server-backed feature: builders leave context, notes, and invitations that persist across sessions. This is the first feature that requires the database for writes, not just reads.
 - The NFT marketplace for trading city NFTs uses the on-chain ownership records from October as its source of truth.
 - OpenAPI spec extends to cover exchange and civic endpoints; Orval regenerates the React Query hooks and Zod schemas.
