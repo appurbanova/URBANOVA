@@ -21,6 +21,23 @@ const RPC_ENDPOINTS = [
   'https://bsc-dataseed.nariox.org',
 ];
 
+const AGENT_PROMPT = `Mint one URBANOVA Agentic Pass (UAP) on BNB Chain (chain id 56).
+
+Contract: ${CONTRACT}
+
+Call mint() with calldata 0x1249c58b.
+
+Value: read currentPrice() on the contract and send exactly that.
+
+First check mintOpen() — if it returns false, the mint has not opened yet.`;
+
+const AGENT_CLI = `baw contract-call preview --binanceChainId 56 \\
+  --from <your agentic wallet> \\
+  --to ${CONTRACT} \\
+  --value <currentPrice() in wei> --inputData 0x1249c58b --json
+
+baw contract-call execute --requestId <requestId> --json`;
+
 const SELECTORS = {
   totalMinted: '0xa2309ff8',
   mintOpen: '0x24bbd049',
@@ -269,6 +286,39 @@ export function AgenticPassSection() {
             <p className="mt-4 max-w-lg text-xs leading-5 text-muted-foreground">Tip: open this page inside the Binance app's Web3 wallet browser to connect and mint.</p>
           )}
           <p className="mt-5 max-w-lg text-xs leading-5 text-muted-foreground">Everything is confirmed inside your own wallet — the city never holds your keys.</p>
+        </div>
+      </div>
+      <div className="mx-auto max-w-7xl px-5 pb-16 sm:px-8 md:pb-24">
+        <div className="border border-border/70 bg-card/30 p-6 sm:p-8">
+          <div className="mb-2 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.22em] text-primary"><span className="h-px w-8 bg-primary" />For agent wallets</div>
+          <h3 className="font-display text-2xl font-semibold tracking-[-.03em]">Mint with your agent</h3>
+          <div className="mt-6 grid gap-6 md:grid-cols-3">
+            {[
+              ['01', 'Hold an Agent ID', 'Claim it free in the Binance app, under your Agentic Wallet. The contract checks it before anything else.'],
+              ['02', 'Call mint()', 'One call, no arguments. Read currentPrice() and send exactly that — your wallet shows the value before you sign.'],
+              ['03', 'Your pass is struck', 'One transaction mints one pass. The first 333 are free — one per wallet — then minting continues until the city is full.'],
+            ].map(([num, title, body]) => (
+              <div key={num} className="border-t border-border/70 pt-4">
+                <div className="font-mono text-[10px] tracking-[.18em] text-primary">{num}</div>
+                <div className="mt-2 font-display text-base font-semibold">{title}</div>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">Prompt for your agent</div>
+              <pre className="mt-2 overflow-x-auto whitespace-pre-wrap border border-border/70 bg-[#0b1020] p-4 font-mono text-[11px] leading-5 text-foreground/90">{AGENT_PROMPT}</pre>
+            </div>
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">baw CLI</div>
+              <pre className="mt-2 overflow-x-auto whitespace-pre-wrap border border-border/70 bg-[#0b1020] p-4 font-mono text-[11px] leading-5 text-foreground/90">{AGENT_CLI}</pre>
+            </div>
+          </div>
+          <p className="mt-6 text-xs leading-5 text-muted-foreground">
+            Agents can also fetch the machine-readable skill for this mint:{' '}
+            <a href="/uap-skill.md" className="font-mono text-[11px] uppercase tracking-[.12em] text-primary hover:underline">urbanova.app/uap-skill.md</a>
+          </p>
         </div>
       </div>
     </section>
