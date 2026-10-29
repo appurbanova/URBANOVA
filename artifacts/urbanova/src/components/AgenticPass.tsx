@@ -45,6 +45,7 @@ const SELECTORS = {
   balanceOf: '0x70a08231',
   freeClaimed: '0x61c0b6a0',
   holdsAgentId: '0x11213086',
+  ownerOf: '0x6352211e',
 };
 
 type ChainState = {
@@ -111,61 +112,23 @@ async function readWalletCheck(address: string): Promise<WalletCheck> {
   };
 }
 
-const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-const ZERO_TOPIC = `0x${'0'.repeat(64)}`;
-
-type RecentMint = {
+type LatestPass = {
   tokenId: number;
   to: string;
-  block: number;
-  logIndex: number;
 };
 
-async function rpcJson(method: string, params: unknown[]): Promise<unknown> {
-  let lastError: unknown = null;
-  for (const endpoint of RPC_ENDPOINTS) {
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-      });
-      const json = (await response.json()) as { result?: unknown; error?: unknown };
-      if (json.result !== undefined && json.result !== null) return json.result;
-      lastError = json.error ?? new Error('empty result');
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  throw lastError instanceof Error ? lastError : new Error('RPC unavailable');
-}
-
-/** Mint terbaru dibaca dari event Transfer (from = alamat nol) kontrak UAP. */
-async function fetchRecentMints(limit = 8): Promise<RecentMint[]> {
-  const latest = Number(BigInt((await rpcJson('eth_blockNumber', [])) as string));
-  const found: RecentMint[] = [];
-  const CHUNK = 2000;
-  for (let end = latest; end > 0 && found.length < limit; end -= CHUNK) {
-    const start = Math.max(0, end - CHUNK + 1);
-    const logs = (await rpcJson('eth_getLogs', [{
-      address: CONTRACT,
-      fromBlock: `0x${start.toString(16)}`,
-      toBlock: `0x${end.toString(16)}`,
-      topics: [TRANSFER_TOPIC, ZERO_TOPIC],
-    }])) as Array<{ topics: string[]; blockNumber: string; logIndex: string }>;
-    for (const log of logs) {
-      if (log.topics.length >= 4) {
-        found.push({
-          tokenId: Number(BigInt(log.topics[3])),
-          to: `0x${log.topics[2].slice(26)}`,
-          block: Number(BigInt(log.blockNumber)),
-          logIndex: Number(BigInt(log.logIndex)),
-        });
-      }
-    }
-  }
-  found.sort((a, b) => b.block - a.block || b.logIndex - a.logIndex);
-  return found.slice(0, limit);
+/**
+ * Pass terakhir yang ter-mint: token ID berurutan dari totalMinted,
+ * pemiliknya dibaca via ownerOf (eth_call biasa — selalu tersedia di RPC publik,
+ * tidak seperti eth_getLogs yang dibatasi node BSC publik).
+ */
+async function fetchLatestPasses(totalMinted: number, limit = 8): Promise<LatestPass[]> {
+  const count = Math.min(limit, totalMinted);
+  const ids = Array.from({ length: count }, (_, i) => totalMinted - i);
+  return Promise.all(ids.map(async (tokenId) => {
+    const ownerHex = await ethCall(SELECTORS.ownerOf + pad32(tokenId.toString(16)));
+    return { tokenId, to: `0x${ownerHex.slice(26)}` };
+  }));
 }
 
 function shortAddress(address: string): string {
@@ -272,7 +235,7 @@ export function AgenticMarketSection() {
 
 export function AgenticPassSection() {
   const [chain, setChain] = useState<ChainState | null>(null);
-  const [recentMints, setRecentMints] = useState<RecentMint[]>([]);
+  const [recentMints, setRecentMints] = useState<LatestPass[]>([]);
   const [justMinted, setJustMinted] = useState(0);
   const [walletInput, setWalletInput] = useState('');
   const [check, setCheck] = useState<WalletCheck | null>(null);
@@ -289,24 +252,11 @@ export function AgenticPassSection() {
     }
   }, []);
 
-  const refreshMints = useCallback(async () => {
-    try {
-      setRecentMints(await fetchRecentMints());
-    } catch {
-      /* feed mint terbaru bersifat pelengkap; abaikan kegagalan RPC */
-    }
-  }, []);
-
   useEffect(() => {
     void refresh();
-    void refreshMints();
     const stateTimer = setInterval(() => void refresh(), 15000);
-    const mintsTimer = setInterval(() => void refreshMints(), 60000);
-    return () => {
-      clearInterval(stateTimer);
-      clearInterval(mintsTimer);
-    };
-  }, [refresh, refreshMints]);
+    return () => clearInterval(stateTimer);
+  }, [refresh]);
 
   useEffect(() => {
     if (!chain) return;
@@ -314,11 +264,27 @@ export function AgenticPassSection() {
     prevMintedRef.current = chain.totalMinted;
     if (prev !== null && chain.totalMinted > prev) {
       setJustMinted(chain.totalMinted - prev);
-      void refreshMints();
       if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
       flashTimerRef.current = setTimeout(() => setJustMinted(0), 6000);
     }
-  }, [chain, refreshMints]);
+  }, [chain]);
+
+  const mintedNow = chain?.totalMinted ?? 0;
+  useEffect(() => {
+    if (mintedNow === 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const passes = await fetchLatestPasses(mintedNow);
+        if (!cancelled) setRecentMints(passes);
+      } catch {
+        /* feed pass terbaru bersifat pelengkap; abaikan kegagalan RPC */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mintedNow]);
 
   const totalMinted = chain?.totalMinted ?? 0;
   const mintOpen = chain?.mintOpen ?? false;
@@ -431,7 +397,7 @@ export function AgenticPassSection() {
               <div className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">Recent mints</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {recentMints.map((mint) => (
-                  <span key={`${mint.block}-${mint.logIndex}`} className="animate-rise border border-border/70 bg-card/50 px-2.5 py-1.5 font-mono text-[10px] tracking-[.08em] text-foreground/85">
+                  <span key={mint.tokenId} className="animate-rise border border-border/70 bg-card/50 px-2.5 py-1.5 font-mono text-[10px] tracking-[.08em] text-foreground/85">
                     Pass #{mint.tokenId} <span className="text-muted-foreground">→ {shortAddress(mint.to)}</span>
                   </span>
                 ))}
