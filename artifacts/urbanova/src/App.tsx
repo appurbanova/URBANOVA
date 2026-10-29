@@ -549,11 +549,7 @@ function ConstellationSVG() {
   );
 }
 
-function Home() {
-  const [selectedDistrict, setSelectedDistrict] = useState<DistrictKey>('signal');
-  const heroSpotRef = useSpotlight();
-  const selected = districtData[selectedDistrict];
-  const heroGlowRef = useParallax<HTMLDivElement>(-0.12);
+function useReveal() {
   useEffect(() => {
     const reveal = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -566,6 +562,29 @@ function Home() {
     document.querySelectorAll('.home-reveal').forEach((element) => reveal.observe(element));
     return () => { reveal.disconnect(); };
   }, []);
+}
+
+function CitySections() {
+  const [selectedDistrict, setSelectedDistrict] = useState<DistrictKey>('signal');
+  const selected = districtData[selectedDistrict];
+  return <>
+    <ActivityTicker />
+    <section className="home-reveal border-y border-border/60 bg-[#101323]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[.75fr_1.25fr] md:py-20"><div><SectionLabel>Why a city</SectionLabel><h2 className="font-display text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">A better way to read a builder.</h2></div><div className="grid gap-8 sm:grid-cols-3"><Feature icon={<Orbit size={19} />} title="Find the signal" text="A quiet layer over your public work, connecting releases, writing, and conversation." /><Feature icon={<Layers3 size={19} />} title="See the shape" text="Districts reveal patterns that a chronological feed keeps flat and easy to miss." /><Feature icon={<Compass size={19} />} title="Choose your next" text="Use the city as a personal instrument for deciding where to put your attention." /></div></div></section>
+    <section className="home-reveal mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-24"><div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] md:items-end"><div><SectionLabel>Made for the open web</SectionLabel><h2 className="font-display max-w-2xl text-4xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">The public internet is a place. <span className="text-muted-foreground">URBANOVA gives it contours.</span></h2></div><div className="border-l border-primary/50 pl-5 text-sm leading-6 text-muted-foreground">No vanity metrics. No productivity theatre. Just a thoughtful surface for the work, people, and ideas you have chosen to make visible.</div></div><div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{(Object.keys(districtData) as DistrictKey[]).map((key, i) => <DistrictCard3D key={key} districtKey={key} index={i} selected={selectedDistrict === key} onSelect={() => setSelectedDistrict(key)} />)}</div><div className="mt-4 flex flex-col gap-4 border border-primary/30 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between" aria-live="polite"><div><div className="font-mono text-[9px] uppercase tracking-[.18em] text-primary">{selected.eyebrow} / selected layer</div><p className="mt-1 font-display text-xl font-semibold">{selected.name}</p><p className="mt-1 text-sm text-muted-foreground">{selected.stat} · {selected.detail}</p></div><Link href="/demo" className="inline-flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">Open the map <ArrowUpRight size={14} /></Link></div></section>
+    <section className="home-reveal border-t border-border/60 bg-primary px-5 py-14 text-primary-foreground sm:px-8 md:py-20"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[.2em] opacity-70">Start with what is already there</div><h2 className="cta-glow mt-4 max-w-xl font-display text-4xl font-bold leading-none tracking-[-.05em] sm:text-6xl">Give your work a place to live.</h2></div><Link href="/login" data-testid="link-cta-create-city" className="magnetic flex items-center gap-3 border border-primary-foreground/50 px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.15em] transition-colors hover:bg-primary-foreground hover:text-primary">Create your demo city <ArrowUpRight size={15} /></Link></div></section>
+    <section className="border-t border-border/60 px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-start gap-4 sm:flex-row sm:items-center"><span className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">Mobile apps — coming soon</span><div className="grid w-full max-w-[340px] grid-cols-2 items-stretch gap-2.5" aria-label="Mobile apps coming soon"><StoreBadge store="apple" /><StoreBadge store="google" /></div></div></section>
+  </>;
+}
+
+function CityPage() {
+  useReveal();
+  return <div className="noise"><ScrollProgress /><SiteHeader /><main><CitySections /></main><Footer /></div>;
+}
+
+function Home() {
+  const heroSpotRef = useSpotlight();
+  const heroGlowRef = useParallax<HTMLDivElement>(-0.12);
+  useReveal();
   return <div className="noise"><ScrollProgress /><SiteHeader /><main>
     <section className="relative overflow-hidden pb-20">
       <div className="absolute inset-0 grid-lines opacity-20" />
@@ -581,18 +600,13 @@ function Home() {
           <div className="hero-word" style={{ animationDelay: '0ms' }}><SectionLabel>Public activity, made legible</SectionLabel></div>
           <div className="mt-4"><HeroWords /></div>
           <p className="hero-word mt-7 max-w-md text-base leading-7 text-muted-foreground sm:text-lg" style={{ animationDelay: '600ms' }}>URBANOVA turns the things you build in public into a <RotatingWord words={['living, explorable world.', 'map you can walk.', 'system you can read.', 'place you can return to.']} /> See the signal. Find the shape. Keep moving.</p>
-          <div className="hero-word mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '750ms' }}><MagneticButton href="/demo" testId="link-hero-demo">Explore a sample city <ArrowUpRight size={15} /></MagneticButton><MagneticButton href="/how-to" testId="link-hero-how-to" variant="ghost">Read the field guide <ChevronRight size={15} /></MagneticButton></div>
-          <div className="hero-word !mt-7 !grid w-full max-w-[340px] grid-cols-2 items-stretch gap-2.5" style={{ animationDelay: '850ms' }} aria-label="Mobile apps coming soon"><StoreBadge store="apple" /><StoreBadge store="google" /></div>
-          <div className="hero-word !mt-10 flex items-center gap-4 border-t border-border/70 pt-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground" style={{ animationDelay: '950ms' }}><span className="text-foreground">01</span><span className="h-px w-12 bg-border" />A map, not a feed</div>
+          <div className="hero-word mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '750ms' }}><a href="#agentic-pass" data-testid="link-hero-mint" className="flex items-center gap-3 bg-primary px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.14em] text-primary-foreground transition-transform hover:-translate-y-0.5">Mint your Agentic Pass <ArrowUpRight size={15} /></a><MagneticButton href="/city" testId="link-hero-city" variant="ghost">Explore the city <ChevronRight size={15} /></MagneticButton></div>
         </div>
         <CityTilt />
       </div>
     </section>
-    <ActivityTicker />
-    <section className="home-reveal border-y border-border/60 bg-[#101323]"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[.75fr_1.25fr] md:py-20"><div><SectionLabel>Why a city</SectionLabel><h2 className="font-display text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">A better way to read a builder.</h2></div><div className="grid gap-8 sm:grid-cols-3"><Feature icon={<Orbit size={19} />} title="Find the signal" text="A quiet layer over your public work, connecting releases, writing, and conversation." /><Feature icon={<Layers3 size={19} />} title="See the shape" text="Districts reveal patterns that a chronological feed keeps flat and easy to miss." /><Feature icon={<Compass size={19} />} title="Choose your next" text="Use the city as a personal instrument for deciding where to put your attention." /></div></div></section>
-    <section className="home-reveal mx-auto max-w-7xl px-5 py-16 sm:px-8 md:py-24"><div className="grid gap-10 md:grid-cols-[1.15fr_.85fr] md:items-end"><div><SectionLabel>Made for the open web</SectionLabel><h2 className="font-display max-w-2xl text-4xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">The public internet is a place. <span className="text-muted-foreground">URBANOVA gives it contours.</span></h2></div><div className="border-l border-primary/50 pl-5 text-sm leading-6 text-muted-foreground">No vanity metrics. No productivity theatre. Just a thoughtful surface for the work, people, and ideas you have chosen to make visible.</div></div><div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{(Object.keys(districtData) as DistrictKey[]).map((key, i) => <DistrictCard3D key={key} districtKey={key} index={i} selected={selectedDistrict === key} onSelect={() => setSelectedDistrict(key)} />)}</div><div className="mt-4 flex flex-col gap-4 border border-primary/30 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between" aria-live="polite"><div><div className="font-mono text-[9px] uppercase tracking-[.18em] text-primary">{selected.eyebrow} / selected layer</div><p className="mt-1 font-display text-xl font-semibold">{selected.name}</p><p className="mt-1 text-sm text-muted-foreground">{selected.stat} · {selected.detail}</p></div><Link href="/demo" className="inline-flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">Open the map <ArrowUpRight size={14} /></Link></div></section>
     <AgenticPassSection />
-    <section className="home-reveal border-t border-border/60 bg-primary px-5 py-14 text-primary-foreground sm:px-8 md:py-20"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-end"><div><div className="font-mono text-[10px] uppercase tracking-[.2em] opacity-70">Start with what is already there</div><h2 className="cta-glow mt-4 max-w-xl font-display text-4xl font-bold leading-none tracking-[-.05em] sm:text-6xl">Give your work a place to live.</h2></div><Link href="/login" data-testid="link-cta-create-city" className="magnetic flex items-center gap-3 border border-primary-foreground/50 px-5 py-3.5 font-mono text-[10px] uppercase tracking-[.15em] transition-colors hover:bg-primary-foreground hover:text-primary">Create your demo city <ArrowUpRight size={15} /></Link></div></section>
+    <section className="border-t border-border/60 px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 sm:flex-row sm:items-center"><p className="max-w-md text-sm leading-6 text-muted-foreground">The city is bigger than the pass — districts, signals, and the living map live here.</p><Link href="/city" data-testid="link-home-city" className="inline-flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">Explore the city <ArrowUpRight size={14} /></Link></div></section>
   </main><Footer /></div>;
 }
 
@@ -872,7 +886,7 @@ function Terms() {
 }
 
 function Router() {
-  return <Switch><Route path="/" component={Home} /><Route path="/demo" component={Urbanova3D} /><Route path="/mini-games" component={MiniGames} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route path="/community" component={CommunityPage} /><Route component={NotFound} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/city" component={CityPage} /><Route path="/demo" component={Urbanova3D} /><Route path="/mini-games" component={MiniGames} /><Route path="/login" component={Login} /><Route path="/dashboard" component={Dashboard} /><Route path="/about" component={About} /><Route path="/how-to" component={HowTo} /><Route path="/legal" component={LegalCenter} /><Route path="/privacy" component={Privacy} /><Route path="/terms" component={Terms} /><Route path="/cookies" component={Cookies} /><Route path="/roadmap" component={Roadmap} /><Route path="/community" component={CommunityPage} /><Route component={NotFound} /></Switch>;
 }
 
 function App() {
