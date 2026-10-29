@@ -3,15 +3,17 @@ import { ArrowUpRight, Check, WalletCards } from 'lucide-react';
 
 /**
  * URBANOVA Agentic Pass (UAP) — section mint NFT khusus Binance Agentic Wallet.
- * Kontrak ERC-721 di BNB Smart Chain. Nilai mint tidak pernah ditampilkan di web:
- * seluruh nilai hanya muncul di layar konfirmasi wallet pengguna.
+ * Kontrak ERC-721 v2 di BNB Smart Chain, pola mint sama seperti NOMIO:
+ * mint() satu panggilan tanpa argumen, nilai dibaca dari currentPrice(),
+ * dan kontrak memeriksa kepemilikan SPACE ID Agent ID sebelum apa pun.
+ * Nilai mint tidak pernah ditampilkan di web: seluruh nilai hanya muncul
+ * di layar konfirmasi wallet pengguna.
  */
 
-const CONTRACT = '0x3a8F2fE59fd461D447e239c924713B040C7a45f7';
+const CONTRACT = '0x4a800D4775F1c0aCAF8124422127CB7Fe3D5b959';
 const BSCSCAN = `https://bscscan.com/address/${CONTRACT}`;
 const MAX_SUPPLY = 3333;
 const FREE_SUPPLY = 333;
-const MAX_PAID_PER_WALLET = 10;
 
 const RPC_ENDPOINTS = [
   'https://bsc-dataseed.bnbchain.org',
@@ -22,15 +24,16 @@ const RPC_ENDPOINTS = [
 const SELECTORS = {
   totalMinted: '0xa2309ff8',
   mintOpen: '0x24bbd049',
-  platformFee: '0x26232a2e',
+  currentPrice: '0x9d1b464a',
   freeClaimed: '0x61c0b6a0',
-  mint: '0xa0712d68',
+  holdsAgentId: '0x11213086',
+  mint: '0x1249c58b',
 };
 
 type ChainState = {
   totalMinted: number;
   mintOpen: boolean;
-  feeWei: bigint;
+  priceWei: bigint;
 };
 
 function pad32(hex: string): string {
@@ -62,20 +65,20 @@ async function ethCall(data: string): Promise<string> {
 }
 
 async function readChainState(): Promise<ChainState> {
-  const [mintedHex, openHex, feeHex] = await Promise.all([
+  const [mintedHex, openHex, priceHex] = await Promise.all([
     ethCall(SELECTORS.totalMinted),
     ethCall(SELECTORS.mintOpen),
-    ethCall(SELECTORS.platformFee),
+    ethCall(SELECTORS.currentPrice),
   ]);
   return {
     totalMinted: Number(BigInt(mintedHex)),
     mintOpen: BigInt(openHex) === 1n,
-    feeWei: BigInt(feeHex),
+    priceWei: BigInt(priceHex),
   };
 }
 
-async function readFreeClaimed(address: string): Promise<boolean> {
-  const result = await ethCall(SELECTORS.freeClaimed + pad32(address.toLowerCase().replace(/^0x/, '')));
+async function readAddressFlag(selector: string, address: string): Promise<boolean> {
+  const result = await ethCall(selector + pad32(address.toLowerCase().replace(/^0x/, '')));
   return BigInt(result) === 1n;
 }
 
@@ -91,7 +94,7 @@ export function AgenticPassSection() {
   const [chain, setChain] = useState<ChainState | null>(null);
   const [account, setAccount] = useState<string | null>(null);
   const [freeClaimed, setFreeClaimed] = useState(false);
-  const [qty, setQty] = useState(1);
+  const [hasAgentId, setHasAgentId] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -113,9 +116,11 @@ export function AgenticPassSection() {
   useEffect(() => {
     if (!account) {
       setFreeClaimed(false);
+      setHasAgentId(null);
       return;
     }
-    void readFreeClaimed(account).then(setFreeClaimed).catch(() => setFreeClaimed(false));
+    void readAddressFlag(SELECTORS.freeClaimed, account).then(setFreeClaimed).catch(() => setFreeClaimed(false));
+    void readAddressFlag(SELECTORS.holdsAgentId, account).then(setHasAgentId).catch(() => setHasAgentId(null));
   }, [account, chain?.totalMinted]);
 
   const totalMinted = chain?.totalMinted ?? 0;
@@ -124,6 +129,7 @@ export function AgenticPassSection() {
   const soldOut = totalMinted >= MAX_SUPPLY;
   const progress = Math.min(100, (totalMinted / MAX_SUPPLY) * 100);
   const providerAvailable = typeof window !== 'undefined' && getProvider() !== null;
+  const agentGateBlocked = account !== null && hasAgentId === false;
 
   const connect = async () => {
     const provider = getProvider();
@@ -160,16 +166,14 @@ export function AgenticPassSection() {
     setStatus('');
     setTxHash(null);
     try {
-      const mintQty = inFreePhase ? 1 : qty;
-      const value = inFreePhase ? 0n : chain.feeWei * BigInt(mintQty);
-      const data = SELECTORS.mint + pad32(mintQty.toString(16));
+      const latest = await readChainState();
       const hash = (await provider.request({
         method: 'eth_sendTransaction',
         params: [{
           from: account,
           to: CONTRACT,
-          data,
-          value: `0x${value.toString(16)}`,
+          data: SELECTORS.mint,
+          value: `0x${latest.priceWei.toString(16)}`,
         }],
       })) as string;
       setTxHash(hash);
@@ -204,7 +208,8 @@ export function AgenticPassSection() {
           <div className="mb-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.22em] text-primary"><span className="h-px w-8 bg-primary" />The city's first collectible</div>
           <h2 className="font-display text-4xl font-semibold leading-[.98] tracking-[-.05em] sm:text-5xl">URBANOVA <span className="text-muted-foreground">Agentic Pass</span></h2>
           <p className="mt-5 max-w-lg leading-7 text-muted-foreground">
-            A pass struck for the people building this city, available <span className="text-foreground">exclusively through Binance Agentic Wallet</span> on BNB Smart Chain.
+            A pass struck for the people building this city, minted <span className="text-foreground">only by Binance Agentic Wallets holding an Agent ID</span> —
+            the contract checks the SPACE ID Agent ID on-chain before anything else, and turns every other caller away.
             When the gates open, the first {FREE_SUPPLY} passes are free — one per wallet. After that, minting continues until the city is full.
           </p>
           <div className="mt-7 grid max-w-lg grid-cols-3 gap-3">
@@ -236,18 +241,9 @@ export function AgenticPassSection() {
                 {soldOut ? 'Sold out' : 'Mint opens soon'}
               </button>
             ) : (
-              <>
-                {!inFreePhase && (
-                  <div className="flex items-center border border-border" aria-label="Mint quantity">
-                    <button type="button" aria-label="Decrease quantity" onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary">−</button>
-                    <span className="min-w-8 text-center font-mono text-sm" data-testid="text-uap-qty">{qty}</span>
-                    <button type="button" aria-label="Increase quantity" onClick={() => setQty((q) => Math.min(MAX_PAID_PER_WALLET, q + 1))} className="px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary">+</button>
-                  </div>
-                )}
-                <button type="button" onClick={() => void mint()} disabled={busy || (inFreePhase && freeClaimed)} data-testid="button-uap-mint" className="flex items-center gap-2 bg-primary px-5 py-3.5 font-mono text-[10px] font-medium uppercase tracking-[.15em] text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:opacity-60">
-                  {busy ? 'Confirm in your wallet…' : inFreePhase ? (freeClaimed ? 'Free pass claimed' : 'Claim free pass') : `Mint ${qty} pass${qty > 1 ? 'es' : ''}`}
-                </button>
-              </>
+              <button type="button" onClick={() => void mint()} disabled={busy || agentGateBlocked || (inFreePhase && freeClaimed)} data-testid="button-uap-mint" className="flex items-center gap-2 bg-primary px-5 py-3.5 font-mono text-[10px] font-medium uppercase tracking-[.15em] text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:opacity-60">
+                {busy ? 'Confirm in your wallet…' : agentGateBlocked ? 'Agent ID required' : inFreePhase ? (freeClaimed ? 'Free pass claimed' : 'Claim free pass') : 'Mint one pass'}
+              </button>
             )}
             <a href={BSCSCAN} target="_blank" rel="noreferrer" data-testid="link-uap-contract" className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-primary hover:underline">
               View contract <ArrowUpRight size={14} />
@@ -256,6 +252,11 @@ export function AgenticPassSection() {
           {account && (
             <p className="mt-4 flex items-center gap-2 font-mono text-[10px] tracking-[.08em] text-muted-foreground">
               <Check size={13} className="text-secondary" /> {account.slice(0, 6)}…{account.slice(-4)} · BNB Smart Chain
+            </p>
+          )}
+          {agentGateBlocked && (
+            <p className="mt-4 max-w-lg border-l-2 border-[#e4786d] px-3 py-2 text-xs leading-5 text-muted-foreground" role="status">
+              This wallet does not hold an Agent ID yet. Claim your free Agent ID in the Binance app — under your Agentic Wallet — then come back to mint.
             </p>
           )}
           {status && <p className="mt-4 max-w-lg border-l-2 border-primary px-3 py-2 text-xs leading-5 text-muted-foreground" role="status">{status}</p>}
